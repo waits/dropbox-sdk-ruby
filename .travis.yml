@@ -1,13 +1,14 @@
 language: ruby
 
 rvm:
-  - 2.1
-  - 2.2
-  - 2.3
+  - 2.1.9
+  - 2.2.5
+  - 2.3.1
 
 sudo: required
 dist: trusty
 
+before_install: gem install bundler -v '1.12.5'
 script: ruby test.rb
 
 notifications:
