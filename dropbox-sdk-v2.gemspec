@@ -9,4 +9,6 @@ Gem::Specification.new do |s|
   s.files       = ['lib/dropbox.rb']
   s.homepage    = 'http://rubygems.org/gems/dropbox-sdk-v2'
   s.license     = 'MIT'
+  s.required_ruby_version = '>= 2.1.0'
+  s.add_development_dependency 'minitest', '~> 5.9'
 end

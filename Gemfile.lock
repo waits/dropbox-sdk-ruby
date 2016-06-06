@@ -1,0 +1,19 @@
+PATH
+  remote: .
+  specs:
+    dropbox-sdk-v2 (0.0.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.9.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  dropbox-sdk-v2!
+  minitest (~> 5.9)
+
+BUNDLED WITH
+   1.12.5
