@@ -84,4 +84,23 @@ class DropboxTest < Minitest::Test
       @client.list_folder('/doesnotexist')
     end
   end
+
+  def test_search
+    matches = @client.search('folder')
+    assert_equal 2, matches.length
+    assert matches[1].is_a?(Dropbox::Folder)
+    assert_equal 'folder_to_search', matches[1].name
+
+    matches = @client.search('sub', '/folder_to_search')
+    assert_equal 2, matches.length
+
+    matches = @client.search('sub', '/folder_to_search', 1)
+    assert_equal 1, matches.length
+  end
+
+  def test_search_error
+    assert_raises(Dropbox::APIError) do
+      matches = @client.search('subfolder', '/')
+    end
+  end
 end

@@ -28,6 +28,11 @@ module Dropbox
       resp['entries'].map { |e| object_from_response(e) }
     end
 
+    def search(query, path='', max=100)
+      resp = request('/search', path: path, query: query, max_results: max)
+      resp['matches'].map { |m| object_from_response(m['metadata']) }
+    end
+
     private
       def object_from_response(resp)
         case resp['.tag']
