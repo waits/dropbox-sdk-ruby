@@ -11,6 +11,11 @@ module Dropbox
       @access_token = access_token
     end
 
+    def copy(from, to)
+      resp = request('/copy', from_path: from, to_path: to)
+      object_from_response(resp)
+    end
+
     def create_folder(path)
       resp = request('/create_folder', path: path)
       FolderMetadata.new(resp['id'], resp['path_lower'])
@@ -24,6 +29,11 @@ module Dropbox
     def list_folder(path)
       resp = request('/list_folder', path: path)
       resp['entries'].map { |e| object_from_response(e) }
+    end
+
+    def move(from, to)
+      resp = request('/move', from_path: from, to_path: to)
+      object_from_response(resp)
     end
 
     def search(query, path='', max=100)

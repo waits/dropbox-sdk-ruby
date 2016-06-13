@@ -1,14 +1,10 @@
 require 'minitest/autorun'
 require 'dropbox'
 
-class DropboxTest < Minitest::Test
+class DropboxClientTest < Minitest::Test
   def setup
     @client = Dropbox::Client.new(ENV['DROPBOX_SDK_ACCESS_TOKEN'])
     @nonce = Time.now.to_i.to_s
-  end
-
-  def test_class
-    assert Dropbox::Client.is_a?(Class), 'Dropbox::Client is not a Class'
   end
 
   def test_client_initialize
@@ -27,27 +23,35 @@ class DropboxTest < Minitest::Test
 
   def test_invalid_access_token
     dbx = Dropbox::Client.new('12345678' * 8)
+
     assert_raises(Dropbox::APIError) do
       dbx.list_folder('/somedir')
     end
   end
 
-  def test_folder_initialize
-    folder = Dropbox::FolderMetadata.new('id:123', '/parent/middle/child')
-    assert_equal 'child', folder.name
+  def test_copy
+    path = '/copied_folder'
+    folder = @client.copy('/folder_to_copy', path)
+
+    assert_equal 'copied_folder', folder.name
+
+    @client.delete(path)
   end
 
-  def test_file_initialize
-    file = Dropbox::FileMetadata.new('id:123', '/folder/file', 11)
-    assert_equal 'file', file.name
-    assert_equal 11, file.size
+  def test_copy_error
+    assert_raises(Dropbox::APIError) do
+      @client.copy('/folder_to_copy', '/folder_to_copy')
+    end
   end
 
   def test_create_folder
-    path = '/dropbox_ruby_sdk_test_dir_' + @nonce
+    path = '/temp_dir'
     folder = @client.create_folder(path)
+
     assert folder.is_a?(Dropbox::FolderMetadata)
     assert_equal path, folder.path
+
+    @client.delete(path)
   end
 
   def test_create_folder_error
@@ -60,6 +64,7 @@ class DropboxTest < Minitest::Test
     path = '/folder_to_delete'
     @client.create_folder(path)
     folder = @client.delete(path)
+
     assert folder.is_a?(Dropbox::FolderMetadata)
     assert_equal path[1..-1], folder.name
   end
@@ -72,6 +77,7 @@ class DropboxTest < Minitest::Test
 
   def test_list_folder
     entries = @client.list_folder('/folder_to_list')
+
     assert entries[0].is_a?(Dropbox::FolderMetadata)
     assert_equal 'subfolder', entries[0].name
     assert entries[1].is_a?(Dropbox::FileMetadata)
@@ -85,11 +91,27 @@ class DropboxTest < Minitest::Test
     end
   end
 
+  def test_move
+    from, to = '/folder_to_move', '/moved_folder'
+    @client.create_folder(from)
+    folder = @client.move(from, to)
+
+    assert_equal 'moved_folder', folder.name
+
+    @client.delete(to)
+  end
+
+  def test_move_error
+    assert_raises(Dropbox::APIError) do
+      @client.move('/does_not_exist', '/does_not_exist')
+    end
+  end
+
   def test_search
     matches = @client.search('folder')
-    assert_equal 2, matches.length
-    assert matches[1].is_a?(Dropbox::FolderMetadata)
-    assert_equal 'folder_to_search', matches[1].name
+    assert_equal 3, matches.length
+    assert matches[2].is_a?(Dropbox::FolderMetadata)
+    assert_equal 'folder_to_search', matches[2].name
 
     matches = @client.search('sub', '/folder_to_search')
     assert_equal 2, matches.length
