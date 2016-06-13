@@ -33,12 +33,12 @@ class DropboxTest < Minitest::Test
   end
 
   def test_folder_initialize
-    folder = Dropbox::Folder.new('id:123', '/parent/middle/child')
+    folder = Dropbox::FolderMetadata.new('id:123', '/parent/middle/child')
     assert_equal 'child', folder.name
   end
 
   def test_file_initialize
-    file = Dropbox::File.new('id:123', '/folder/file', 11)
+    file = Dropbox::FileMetadata.new('id:123', '/folder/file', 11)
     assert_equal 'file', file.name
     assert_equal 11, file.size
   end
@@ -46,7 +46,7 @@ class DropboxTest < Minitest::Test
   def test_create_folder
     path = '/dropbox_ruby_sdk_test_dir_' + @nonce
     folder = @client.create_folder(path)
-    assert folder.is_a?(Dropbox::Folder)
+    assert folder.is_a?(Dropbox::FolderMetadata)
     assert_equal path, folder.path
   end
 
@@ -60,7 +60,7 @@ class DropboxTest < Minitest::Test
     path = '/folder_to_delete'
     @client.create_folder(path)
     folder = @client.delete(path)
-    assert folder.is_a?(Dropbox::Folder)
+    assert folder.is_a?(Dropbox::FolderMetadata)
     assert_equal path[1..-1], folder.name
   end
 
@@ -72,9 +72,9 @@ class DropboxTest < Minitest::Test
 
   def test_list_folder
     entries = @client.list_folder('/folder_to_list')
-    assert entries[0].is_a?(Dropbox::Folder)
+    assert entries[0].is_a?(Dropbox::FolderMetadata)
     assert_equal 'subfolder', entries[0].name
-    assert entries[1].is_a?(Dropbox::File)
+    assert entries[1].is_a?(Dropbox::FileMetadata)
     assert_equal 'file.txt', entries[1].name
     assert_equal 4, entries[1].size
   end
@@ -88,7 +88,7 @@ class DropboxTest < Minitest::Test
   def test_search
     matches = @client.search('folder')
     assert_equal 2, matches.length
-    assert matches[1].is_a?(Dropbox::Folder)
+    assert matches[1].is_a?(Dropbox::FolderMetadata)
     assert_equal 'folder_to_search', matches[1].name
 
     matches = @client.search('sub', '/folder_to_search')

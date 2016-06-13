@@ -6,7 +6,8 @@ Gem::Specification.new do |s|
   s.description = 'Ruby SDK for the Dropbox API v2'
   s.authors     = ['Dylan Waits']
   s.email       = 'dylan@waits.io'
-  s.files       = ['lib/dropbox.rb']
+  s.files       = ['lib/dropbox.rb', 'lib/dropbox/client.rb', 'lib/dropbox/error.rb', 'lib/dropbox/metadata.rb']
+  s.require_paths = ['lib']
   s.homepage    = 'http://rubygems.org/gems/dropbox-sdk-v2'
   s.license     = 'MIT'
   s.required_ruby_version = '>= 2.1.0'
