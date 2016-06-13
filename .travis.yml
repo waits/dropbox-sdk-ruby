@@ -11,7 +11,7 @@ dist: trusty
 before_install:
   - gem install minitest -v '5.9.0'
   - gem install http -v '2.0.1'
-script: ruby test.rb
+script: rake test
 
 notifications:
   email:

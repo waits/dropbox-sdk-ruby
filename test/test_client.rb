@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require File.expand_path '../lib/dropbox', __FILE__
+require 'dropbox'
 
 class DropboxTest < Minitest::Test
   def setup
@@ -17,11 +17,11 @@ class DropboxTest < Minitest::Test
 
   def test_client_initialize_error
     assert_raises(Dropbox::ClientError) do
-      dbx = Dropbox::Client.new('')
+      Dropbox::Client.new('')
     end
 
     assert_raises(Dropbox::ClientError) do
-      dbx = Dropbox::Client.new(nil)
+      Dropbox::Client.new(nil)
     end
   end
 
@@ -100,7 +100,7 @@ class DropboxTest < Minitest::Test
 
   def test_search_error
     assert_raises(Dropbox::APIError) do
-      matches = @client.search('subfolder', '/')
+      @client.search('subfolder', '/')
     end
   end
 end
