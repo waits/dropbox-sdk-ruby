@@ -26,14 +26,29 @@ module Dropbox
       object_from_response(resp)
     end
 
+    def download(path)
+      resp, body = content_request('/download', path: path)
+      return object_from_response(resp, 'file'), body
+    end
+
     def get_metadata(path)
       resp = request('/get_metadata', path: path)
       object_from_response(resp)
     end
 
+    def get_preview(path)
+      resp, body = content_request('/get_preview', path: path)
+      return object_from_response(resp, 'file'), body
+    end
+
     def get_temporary_link(path)
       resp = request('/get_temporary_link', path: path)
       return object_from_response(resp['metadata'], 'file'), resp['link']
+    end
+
+    def get_thumbnail(path, format='jpeg', size='w64h64')
+      resp, body = content_request('/get_thumbnail', path: path, format: format, size: size)
+      return object_from_response(resp, 'file'), body
     end
 
     def list_folder(path)
@@ -93,6 +108,15 @@ module Dropbox
           .post(url, json: data)
         raise APIError.new(resp) if resp.code != 200
         JSON.parse(resp.to_s)
+      end
+
+      def content_request(action, args = {})
+        url = CONTENT_API + '/files' + action
+        resp = HTTP.auth('Bearer ' + @access_token)
+          .headers('Dropbox-API-Arg' => args.to_json).get(url)
+        raise APIError.new(resp) if resp.code != 200
+        file = JSON.parse(resp.headers['Dropbox-API-Result'])
+        return file, resp.body
       end
   end
 end

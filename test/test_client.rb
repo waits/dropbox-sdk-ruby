@@ -75,6 +75,19 @@ class DropboxClientTest < Minitest::Test
     end
   end
 
+  def test_download
+    file, content = @client.download('/file.txt')
+
+    assert file.is_a?(Dropbox::FileMetadata)
+    assert_equal "Example file contents\n", content.to_s
+  end
+
+  def test_download_error
+    assert_raises(Dropbox::APIError) do
+      @client.download('/does_not_exist')
+    end
+  end
+
   def test_get_metadata
     file = @client.get_metadata('/file.txt')
 
@@ -86,6 +99,19 @@ class DropboxClientTest < Minitest::Test
   def test_get_metadata_error
     assert_raises(Dropbox::APIError) do
       @client.get_metadata('/does_not_exist')
+    end
+  end
+
+  def test_get_preview
+    file, content = @client.get_preview('/fox.docx')
+
+    assert file.is_a?(Dropbox::FileMetadata)
+    assert_match "%PDF-1.4", content.to_s
+  end
+
+  def test_get_preview_error
+    assert_raises(Dropbox::APIError) do
+      @client.get_preview('/file.txt')
     end
   end
 
@@ -101,6 +127,18 @@ class DropboxClientTest < Minitest::Test
   def test_get_temporary_link_error
     assert_raises(Dropbox::APIError) do
       @client.get_temporary_link('/folder_to_search')
+    end
+  end
+
+  def test_get_thumbnail
+    file, content = @client.get_thumbnail('/image.png', 'png', 'w32h32')
+
+    assert file.is_a?(Dropbox::FileMetadata)
+  end
+
+  def test_get_thumbnail_error
+    assert_raises(Dropbox::APIError) do
+      @client.get_thumbnail('/file.txt')
     end
   end
 
