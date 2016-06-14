@@ -75,6 +75,35 @@ class DropboxClientTest < Minitest::Test
     end
   end
 
+  def test_get_metadata
+    file = @client.get_metadata('/file.txt')
+
+    assert file.is_a?(Dropbox::FileMetadata)
+    assert_equal 'file.txt', file.name
+    assert_equal 22, file.size
+  end
+
+  def test_get_metadata_error
+    assert_raises(Dropbox::APIError) do
+      @client.get_metadata('/does_not_exist')
+    end
+  end
+
+  def test_get_temporary_link
+    file, link = @client.get_temporary_link('/file.txt')
+
+    assert file.is_a?(Dropbox::FileMetadata)
+    assert_equal 'file.txt', file.name
+    assert_equal 22, file.size
+    assert_match 'https://dl.dropboxusercontent.com/apitl/1', link
+  end
+
+  def test_get_temporary_link_error
+    assert_raises(Dropbox::APIError) do
+      @client.get_temporary_link('/folder_to_search')
+    end
+  end
+
   def test_list_folder
     entries = @client.list_folder('/folder_to_list')
 
@@ -87,7 +116,20 @@ class DropboxClientTest < Minitest::Test
 
   def test_list_folder_error
     assert_raises(Dropbox::APIError) do
-      @client.list_folder('/doesnotexist')
+      @client.list_folder('/file.txt')
+    end
+  end
+
+  def test_list_revisions
+    entries, is_deleted = @client.list_revisions('/file.txt')
+
+    assert_equal 1, entries.length
+    assert_equal false, is_deleted
+  end
+
+  def test_list_revisions_error
+    assert_raises(Dropbox::APIError) do
+      @client.list_revisions('/folder_to_search')
     end
   end
 

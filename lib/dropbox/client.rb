@@ -26,9 +26,25 @@ module Dropbox
       object_from_response(resp)
     end
 
+    def get_metadata(path)
+      resp = request('/get_metadata', path: path)
+      object_from_response(resp)
+    end
+
+    def get_temporary_link(path)
+      resp = request('/get_temporary_link', path: path)
+      return object_from_response(resp['metadata'], 'file'), resp['link']
+    end
+
     def list_folder(path)
       resp = request('/list_folder', path: path)
       resp['entries'].map { |e| object_from_response(e) }
+    end
+
+    def list_revisions(path)
+      resp = request('/list_revisions', path: path)
+      entries = resp['entries'].map { |e| object_from_response(e, 'file') }
+      return entries, resp['is_deleted']
     end
 
     def move(from, to)
@@ -42,8 +58,8 @@ module Dropbox
     end
 
     private
-      def object_from_response(resp)
-        case resp['.tag']
+      def object_from_response(resp, tag=resp['.tag'])
+        case tag
         when 'file'
           FileMetadata.new(resp['id'], resp['path_lower'], resp['size'])
         when 'folder'
