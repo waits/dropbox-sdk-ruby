@@ -4,7 +4,11 @@ module Dropbox
   class ClientError < StandardError
     attr_reader :message
 
-    def self.unknown_response_type
+    def self.invalid_access_token
+      self.new("Invalid access token")
+    end
+
+    def self.unknown_response_type(str)
       self.new("Unknown response type '#{str}'")
     end
 

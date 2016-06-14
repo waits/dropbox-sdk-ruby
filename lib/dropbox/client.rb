@@ -5,7 +5,7 @@ module Dropbox
   class Client
     def initialize(access_token)
       unless access_token =~ /^[a-z0-9_-]{64}$/i
-        raise ClientError.new('Access token is invalid.')
+        raise ClientError.invalid_access_token
       end
 
       @access_token = access_token
@@ -65,7 +65,7 @@ module Dropbox
       when 'async_job_id'
         resp['async_job_id']
       else
-        raise ClientError.unknown_response_type
+        raise ClientError.unknown_response_type(resp['.tag'])
       end
     end
 
@@ -82,7 +82,7 @@ module Dropbox
         when 'folder'
           FolderMetadata.new(resp['id'], resp['path_lower'])
         else
-          raise ClientError.unknown_response_type
+          raise ClientError.unknown_response_type(tag)
         end
       end
 
