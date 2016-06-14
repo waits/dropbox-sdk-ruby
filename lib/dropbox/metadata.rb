@@ -10,10 +10,11 @@ module Dropbox
   end
 
   class FileMetadata < Metadata
-    attr_reader :size
+    attr_reader :client_modified, :size
 
-    def initialize(id, path, size)
+    def initialize(id, path, size, client_modified=nil)
       @size = size
+      @client_modified = client_modified
       super(id, path)
     end
   end

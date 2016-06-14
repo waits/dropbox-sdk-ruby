@@ -231,4 +231,28 @@ class DropboxClientTest < Minitest::Test
       @client.search('subfolder', '/')
     end
   end
+
+  def test_upload_string
+    modified = '2007-07-07T00:00:00Z'
+    file = @client.upload('/uploaded_file.txt', 'dropbox', 'overwrite', false, modified)
+
+    assert file.is_a?(Dropbox::FileMetadata)
+    assert_equal 7, file.size
+    assert_equal modified, file.client_modified
+  end
+
+  def test_upload_file
+    File.open('LICENSE') do |f|
+      meta = @client.upload('/license.txt', f, 'overwrite')
+
+      assert meta.is_a?(Dropbox::FileMetadata)
+      assert_equal 1078, meta.size
+    end
+  end
+
+  def test_upload_conflict
+    assert_raises(Dropbox::APIError) do
+      @client.upload('/uploaded_file.txt', 'dropbocks', 'add', false)
+    end
+  end
 end

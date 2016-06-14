@@ -89,11 +89,20 @@ module Dropbox
       resp['matches'].map { |m| object_from_response(m['metadata']) }
     end
 
+    # Body can be a String or an Enumerable.
+    # Mode can be 'add', 'overwrite', or 'update'.
+    def upload(path, body, mode='add', autorename=false, client_modified=nil, mute=false)
+      resp = upload_request('/upload', body, path: path, mode: mode,
+        autorename: autorename, client_modified: client_modified, mute: mute)
+      object_from_response(resp, 'file')
+    end
+
     private
       def object_from_response(resp, tag=resp['.tag'])
         case tag
         when 'file'
-          FileMetadata.new(resp['id'], resp['path_lower'], resp['size'])
+          FileMetadata.new(resp['id'], resp['path_lower'], resp['size'],
+            resp['client_modified'])
         when 'folder'
           FolderMetadata.new(resp['id'], resp['path_lower'])
         else
@@ -117,6 +126,15 @@ module Dropbox
         raise APIError.new(resp) if resp.code != 200
         file = JSON.parse(resp.headers['Dropbox-API-Result'])
         return file, resp.body
+      end
+
+      def upload_request(action, body, args = {})
+        url = CONTENT_API + '/files' + action
+        headers = {'Content-Type' => 'application/octet-stream', 'Dropbox-API-Arg' => args.to_json}
+        headers['Transfer-Encoding'] = 'chunked' unless body.is_a?(String)
+        resp = HTTP.auth('Bearer ' + @access_token).headers(headers).post(url, body: body)
+        raise APIError.new(resp) if resp.code != 200
+        JSON.parse(resp.to_s)
       end
   end
 end
