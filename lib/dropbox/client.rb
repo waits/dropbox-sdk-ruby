@@ -57,6 +57,18 @@ module Dropbox
       object_from_response(resp, 'file')
     end
 
+    def save_url(path, url)
+      resp = request('/save_url', path: path, url: url)
+      case resp['.tag']
+      when 'complete'
+        object_from_response(resp['complete'], 'file')
+      when 'async_job_id'
+        resp['async_job_id']
+      else
+        raise ClientError.unknown_response_type
+      end
+    end
+
     def search(query, path='', max=100)
       resp = request('/search', path: path, query: query, max_results: max)
       resp['matches'].map { |m| object_from_response(m['metadata']) }
@@ -70,7 +82,7 @@ module Dropbox
         when 'folder'
           FolderMetadata.new(resp['id'], resp['path_lower'])
         else
-          raise ClientError.new('Unknown response type')
+          raise ClientError.unknown_response_type
         end
       end
 

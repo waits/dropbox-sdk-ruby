@@ -162,6 +162,19 @@ class DropboxClientTest < Minitest::Test
     end
   end
 
+  def test_save_url
+    job_id = @client.save_url('/saved_file.txt', 'https://www.dropbox.com/robots.txt')
+
+    assert job_id.is_a?(String)
+    assert_match /^[a-z0-9_-]{22}$/i, job_id
+  end
+
+  def test_save_url_error
+    assert_raises(Dropbox::APIError) do
+      @client.save_url('/saved_file.txt', 'ht:/invalid_url')
+    end
+  end
+
   def test_search
     matches = @client.search('folder')
     assert_equal 3, matches.length

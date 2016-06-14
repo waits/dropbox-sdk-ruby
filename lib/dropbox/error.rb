@@ -4,6 +4,10 @@ module Dropbox
   class ClientError < StandardError
     attr_reader :message
 
+    def self.unknown_response_type
+      self.new("Unknown response type '#{str}'")
+    end
+
     def initialize(message=nil)
       @message = message
     end
