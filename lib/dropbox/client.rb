@@ -52,6 +52,11 @@ module Dropbox
       object_from_response(resp)
     end
 
+    def restore(path, rev)
+      resp = request('/restore', path: path, rev: rev)
+      object_from_response(resp, 'file')
+    end
+
     def search(query, path='', max=100)
       resp = request('/search', path: path, query: query, max_results: max)
       resp['matches'].map { |m| object_from_response(m['metadata']) }

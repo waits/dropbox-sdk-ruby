@@ -149,6 +149,19 @@ class DropboxClientTest < Minitest::Test
     end
   end
 
+  def test_restore
+    file = @client.restore('/file.txt', '14449c1893e')
+
+    assert file.is_a?(Dropbox::FileMetadata)
+    assert_equal 'file.txt', file.name
+  end
+
+  def test_restore_error
+    assert_raises(Dropbox::APIError) do
+      @client.restore('/file.txt', 'xyz')
+    end
+  end
+
   def test_search
     matches = @client.search('folder')
     assert_equal 3, matches.length
