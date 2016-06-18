@@ -1,24 +1,40 @@
+require 'time'
+
 module Dropbox
   class Metadata
-    attr_reader :id, :path, :name
+    attr_reader :name, :path_lower, :path_display
 
-    def initialize(id, path)
-      @id = id
-      @path = path
-      @name = path.split('/').last
+    def initialize(attrs={})
+      @name = attrs['name']
+      @path_lower = attrs['path_lower']
+      @path_display = attrs['path_display']
     end
   end
 
   class FileMetadata < Metadata
-    attr_reader :client_modified, :size
+    attr_reader :id, :client_modified, :server_modified, :rev, :size
 
-    def initialize(id, path, size, client_modified=nil)
-      @size = size
-      @client_modified = client_modified
-      super(id, path)
+    def initialize(attrs={})
+      @id = attrs.delete('id')
+      if cm = attrs.delete('client_modified')
+        @client_modified = Time.parse(cm)
+      end
+      @server_modified = Time.parse(attrs.delete('server_modified'))
+      @rev = attrs.delete('rev')
+      @size = attrs.delete('size')
+      super(attrs)
     end
   end
 
   class FolderMetadata < Metadata
+    attr_reader :id
+
+    def initialize(attrs={})
+      @id = attrs.delete('id')
+      super(attrs)
+    end
+  end
+
+  class DeletedMetadata < Metadata
   end
 end

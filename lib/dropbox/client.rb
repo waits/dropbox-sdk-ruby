@@ -1,5 +1,6 @@
 require 'http'
 require 'json'
+require 'time'
 
 module Dropbox
   class Client
@@ -13,63 +14,63 @@ module Dropbox
 
     def copy(from, to)
       resp = request('/files/copy', from_path: from, to_path: to)
-      object_from_response(resp)
+      parse_tagged_response(resp)
     end
 
     def create_folder(path)
       resp = request('/files/create_folder', path: path)
-      FolderMetadata.new(resp['id'], resp['path_lower'])
+      parse_tagged_response(resp, 'folder')
     end
 
     def delete(path)
       resp = request('/files/delete', path: path)
-      object_from_response(resp)
+      parse_tagged_response(resp)
     end
 
     def download(path)
       resp, body = content_request('/files/download', path: path)
-      return object_from_response(resp, 'file'), body
+      return parse_tagged_response(resp, 'file'), body
     end
 
     def get_metadata(path)
       resp = request('/files/get_metadata', path: path)
-      object_from_response(resp)
+      parse_tagged_response(resp)
     end
 
     def get_preview(path)
       resp, body = content_request('/files/get_preview', path: path)
-      return object_from_response(resp, 'file'), body
+      return parse_tagged_response(resp, 'file'), body
     end
 
     def get_temporary_link(path)
       resp = request('/files/get_temporary_link', path: path)
-      return object_from_response(resp['metadata'], 'file'), resp['link']
+      return parse_tagged_response(resp['metadata'], 'file'), resp['link']
     end
 
     def get_thumbnail(path, format='jpeg', size='w64h64')
       resp, body = content_request('/files/get_thumbnail', path: path, format: format, size: size)
-      return object_from_response(resp, 'file'), body
+      return parse_tagged_response(resp, 'file'), body
     end
 
     def list_folder(path)
       resp = request('/files/list_folder', path: path)
-      resp['entries'].map { |e| object_from_response(e) }
+      resp['entries'].map { |e| parse_tagged_response(e) }
     end
 
     def list_revisions(path)
       resp = request('/files/list_revisions', path: path)
-      entries = resp['entries'].map { |e| object_from_response(e, 'file') }
+      entries = resp['entries'].map { |e| parse_tagged_response(e, 'file') }
       return entries, resp['is_deleted']
     end
 
     def move(from, to)
       resp = request('/files/move', from_path: from, to_path: to)
-      object_from_response(resp)
+      parse_tagged_response(resp)
     end
 
     def restore(path, rev)
       resp = request('/files/restore', path: path, rev: rev)
-      object_from_response(resp, 'file')
+      parse_tagged_response(resp, 'file')
     end
 
     # Revokes the current access token and returns it
@@ -83,7 +84,7 @@ module Dropbox
       resp = request('/files/save_url', path: path, url: url)
       case resp['.tag']
       when 'complete'
-        object_from_response(resp['complete'], 'file')
+        parse_tagged_response(resp['complete'], 'file')
       when 'async_job_id'
         resp['async_job_id']
       else
@@ -93,25 +94,27 @@ module Dropbox
 
     def search(query, path='', max=100)
       resp = request('/files/search', path: path, query: query, max_results: max)
-      resp['matches'].map { |m| object_from_response(m['metadata']) }
+      resp['matches'].map { |m| parse_tagged_response(m['metadata']) }
     end
 
     # Body can be a String or an Enumerable
     # Mode can be 'add', 'overwrite', or 'update'
     def upload(path, body, mode='add', autorename=false, client_modified=nil, mute=false)
+      client_modified = client_modified.iso8601 if client_modified.is_a?(Time)
       resp = upload_request('/files/upload', body, path: path, mode: mode,
         autorename: autorename, client_modified: client_modified, mute: mute)
-      object_from_response(resp, 'file')
+      parse_tagged_response(resp, 'file')
     end
 
     private
-      def object_from_response(resp, tag=resp['.tag'])
+      def parse_tagged_response(resp, tag=resp['.tag'])
         case tag
         when 'file'
-          FileMetadata.new(resp['id'], resp['path_lower'], resp['size'],
-            resp['client_modified'])
+          FileMetadata.new(resp)
         when 'folder'
-          FolderMetadata.new(resp['id'], resp['path_lower'])
+          FolderMetadata.new(resp)
+        when 'deleted'
+          DeletedMetadata.new(resp)
         else
           raise ClientError.unknown_response_type(tag)
         end
@@ -122,6 +125,7 @@ module Dropbox
         resp = HTTP.auth('Bearer ' + @access_token)
           .headers(content_type: 'application/json')
           .post(url, json: data)
+
         raise APIError.new(resp) if resp.code != 200
         JSON.parse(resp.to_s)
       end
@@ -130,16 +134,19 @@ module Dropbox
         url = CONTENT_API + action
         resp = HTTP.auth('Bearer ' + @access_token)
           .headers('Dropbox-API-Arg' => args.to_json).get(url)
+
         raise APIError.new(resp) if resp.code != 200
         file = JSON.parse(resp.headers['Dropbox-API-Result'])
         return file, resp.body
       end
 
       def upload_request(action, body, args = {})
-        url = CONTENT_API + action
-        headers = {'Content-Type' => 'application/octet-stream', 'Dropbox-API-Arg' => args.to_json}
-        headers['Transfer-Encoding'] = 'chunked' unless body.is_a?(String)
-        resp = HTTP.auth('Bearer ' + @access_token).headers(headers).post(url, body: body)
+        resp = HTTP.auth('Bearer ' + @access_token).headers({
+          'Content-Type' => 'application/octet-stream',
+          'Dropbox-API-Arg' => args.to_json,
+          'Transfer-Encoding' => ('chunked' unless body.is_a?(String))
+        }).post(CONTENT_API + action, body: body)
+
         raise APIError.new(resp) if resp.code != 200
         JSON.parse(resp.to_s)
       end

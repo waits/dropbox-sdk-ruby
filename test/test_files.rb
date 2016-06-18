@@ -1,5 +1,6 @@
 require 'minitest/autorun'
 require 'dropbox'
+require 'time'
 
 class DropboxFilesTest < Minitest::Test
   def setup
@@ -26,7 +27,9 @@ class DropboxFilesTest < Minitest::Test
     folder = @client.create_folder(path)
 
     assert folder.is_a?(Dropbox::FolderMetadata)
-    assert_equal path, folder.path
+    assert_match /^id:[a-z0-9_-]+$/i, folder.id
+    assert_equal 'temp_dir', folder.name
+    assert_equal path, folder.path_lower
 
     @client.delete(path)
   end
@@ -69,7 +72,10 @@ class DropboxFilesTest < Minitest::Test
     file = @client.get_metadata('/file.txt')
 
     assert file.is_a?(Dropbox::FileMetadata)
+    assert_match /^id:[a-z0-9_-]+$/i, file.id
     assert_equal 'file.txt', file.name
+    assert file.server_modified.is_a?(Time)
+    assert_match /^[a-z0-9_-]+$/i, file.rev
     assert_equal 22, file.size
   end
 
@@ -181,9 +187,6 @@ class DropboxFilesTest < Minitest::Test
 
     assert job_id.is_a?(String)
     assert_match /^[a-z0-9_-]{22}$/i, job_id
-
-    sleep 1
-    @client.delete('/saved_file.txt')
   end
 
   def test_save_url_error
@@ -212,8 +215,8 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_upload_string
-    modified = '2007-07-07T00:00:00Z'
-    file = @client.upload('/uploaded_file.txt', 'dropbox', 'overwrite', false, modified)
+    modified = Time.parse('2007-07-07T00:00:00Z')
+    file = @client.upload('/uploaded_string.txt', 'dropbox', 'overwrite', false, modified)
 
     assert file.is_a?(Dropbox::FileMetadata)
     assert_equal 7, file.size
