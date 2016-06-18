@@ -4,12 +4,11 @@ require 'dropbox'
 class DropboxFilesTest < Minitest::Test
   def setup
     @client = Dropbox::Client.new(ENV['DROPBOX_SDK_ACCESS_TOKEN'])
-    @nonce = Time.now.to_i.to_s
   end
 
   def test_copy
     path = '/copied_folder'
-    folder = @client.copy('/folder_to_copy', path)
+    folder = @client.copy('/empty_folder', path)
 
     assert_equal 'copied_folder', folder.name
 
@@ -18,7 +17,7 @@ class DropboxFilesTest < Minitest::Test
 
   def test_copy_error
     assert_raises(Dropbox::APIError) do
-      @client.copy('/folder_to_copy', '/folder_to_copy')
+      @client.copy('/empty_folder', '/empty_folder')
     end
   end
 
@@ -150,13 +149,12 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_move
-    from, to = '/folder_to_move', '/moved_folder'
-    @client.create_folder(from)
+    from, to = '/empty_folder', '/moved_folder'
     folder = @client.move(from, to)
 
     assert_equal 'moved_folder', folder.name
 
-    @client.delete(to)
+    @client.move(to, from)
   end
 
   def test_move_error
@@ -183,6 +181,9 @@ class DropboxFilesTest < Minitest::Test
 
     assert job_id.is_a?(String)
     assert_match /^[a-z0-9_-]{22}$/i, job_id
+
+    sleep 1
+    @client.delete('/saved_file.txt')
   end
 
   def test_save_url_error
