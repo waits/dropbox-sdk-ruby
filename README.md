@@ -1,5 +1,68 @@
-# dropbox-sdk-ruby
+# Dropbox SDK for Ruby
 
 [![Build Status](https://travis-ci.org/waits/dropbox-sdk-ruby.svg?branch=master)](https://travis-ci.org/waits/dropbox-sdk-ruby)
 
-Ruby SDK for the Dropbox API v2
+This is a small Ruby library for accessing the new [Dropbox API](https://www.dropbox.com/developers/documentation/http/overview). It provides a single class, `Dropbox::Client`, with methods that map to most of the Dropbox API endpoints. Currently all of the endpoints in the `auth`, `files`, and `users` namespaces are supported. Sharing methods are planned.
+
+## Requirements
+- Ruby 2.1.0 or later
+- The [http](https://github.com/httprb/http) gem
+
+## Installation
+
+Run:
+```bash
+gem install dropbox-sdk-v2
+```
+
+Then, in your source files:
+```ruby
+require 'dropbox'
+```
+
+Or just add this to your Gemfile:
+```ruby
+gem 'dropbox-sdk-v2'
+```
+
+## Usage
+
+Set up a client:
+```ruby
+require 'dropbox'
+
+dbx = Dropbox::Client.new(ENV['DROPBOX_ACCESS_TOKEN'])
+```
+
+Create a folder:
+```ruby
+folder = dbx.create_folder('/myfolder') # => Dropbox::FolderMetadata
+folder.id # => "id:a4ayc_80_OEAAAAAAAAAXz"
+folder.name # => "myfolder"
+folder.path_lower # => "/myfolder"
+```
+
+Upload a file:
+```ruby
+file = dbx.upload('/myfolder/file.txt', 'the file contents') # Accepts a String or File
+file.class # => Dropbox::FileMetadata
+file.size # => 17
+file.rev # => a1c10ce0dd78
+```
+
+Download a file:
+```ruby
+file, body = dbx.download('/myfolder/file.txt') # => Dropbox::FileMetadata, HTTP::Response::Body
+body.to_s # => "the file contents"
+```
+
+Delete a file:
+```ruby
+dbx.delete('/myfolder/file.txt') # => Dropbox::FileMetadata
+```
+
+## Contributing
+
+All contributions are welcome. Please [file an issue](https://github.com/waits/dropbox-sdk-ruby/issues) or [submit a pull request](https://github.com/waits/dropbox-sdk-ruby/pulls).
+
+This project strives for full test coverage. To run the test suite, make a [Dropbox App](https://www.dropbox.com/developers/apps) with "app folder" access and generate an access token. Then run `DROPBOX_SDK_ACCESS_TOKEN="..." rake test`.
