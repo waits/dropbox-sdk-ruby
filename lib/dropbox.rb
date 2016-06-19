@@ -1,5 +1,6 @@
 require_relative 'dropbox/client'
 require_relative 'dropbox/errors'
+require_relative 'dropbox/account'
 require_relative 'dropbox/metadata'
 
 module Dropbox

@@ -32,6 +32,16 @@ module Dropbox
       return parse_tagged_response(resp, 'file'), body
     end
 
+    def get_account(id)
+      resp = request('/users/get_account', account_id: id)
+      parse_tagged_response(resp, 'basic_account')
+    end
+
+    def get_current_account
+      resp = request('/users/get_current_account')
+      parse_tagged_response(resp, 'full_account')
+    end
+
     def get_metadata(path)
       resp = request('/files/get_metadata', path: path)
       parse_tagged_response(resp)
@@ -115,22 +125,26 @@ module Dropbox
           FolderMetadata.new(resp)
         when 'deleted'
           DeletedMetadata.new(resp)
+        when 'basic_account'
+          BasicAccount.new(resp)
+        when 'full_account'
+          FullAccount.new(resp)
         else
           raise ClientError.unknown_response_type(tag)
         end
       end
 
-      def request(action, data = {})
+      def request(action, data=nil)
         url = API + action
         resp = HTTP.auth('Bearer ' + @access_token)
-          .headers(content_type: 'application/json')
+          .headers(content_type: ('application/json' if data))
           .post(url, json: data)
 
         raise APIError.new(resp) if resp.code != 200
         JSON.parse(resp.to_s)
       end
 
-      def content_request(action, args = {})
+      def content_request(action, args={})
         url = CONTENT_API + action
         resp = HTTP.auth('Bearer ' + @access_token)
           .headers('Dropbox-API-Arg' => args.to_json).get(url)
@@ -140,7 +154,7 @@ module Dropbox
         return file, resp.body
       end
 
-      def upload_request(action, body, args = {})
+      def upload_request(action, body, args={})
         resp = HTTP.auth('Bearer ' + @access_token).headers({
           'Content-Type' => 'application/octet-stream',
           'Dropbox-API-Arg' => args.to_json,
