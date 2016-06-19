@@ -37,6 +37,11 @@ module Dropbox
       parse_tagged_response(resp, 'basic_account')
     end
 
+    def get_account_batch(ids)
+      resp = request('/users/get_account_batch', account_ids: ids)
+      resp.map { |a| parse_tagged_response(a, 'basic_account') }
+    end
+
     def get_current_account
       resp = request('/users/get_current_account')
       parse_tagged_response(resp, 'full_account')

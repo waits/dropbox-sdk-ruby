@@ -20,6 +20,21 @@ class DropboxUsersTest < Minitest::Test
     end
   end
 
+  def test_get_account_batch
+    id = @client.get_current_account.account_id
+    accounts = @client.get_account_batch([id])
+
+    assert_equal 1, accounts.length
+    assert accounts[0].is_a?(Dropbox::BasicAccount)
+    assert_equal id, accounts[0].account_id
+  end
+
+  def test_get_account_batch_error
+    assert_raises(Dropbox::APIError) do
+      @client.get_account_batch(['invalid_id'])
+    end
+  end
+
   def test_get_current_account
     account = @client.get_current_account
 
