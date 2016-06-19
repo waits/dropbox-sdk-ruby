@@ -45,4 +45,12 @@ class DropboxUsersTest < Minitest::Test
     assert_equal false, account.disabled
   end
 
+  def test_get_space_usage
+    usage = @client.get_space_usage
+
+    assert usage.used.is_a?(Integer)
+    assert_equal 'individual', usage.allocation
+    assert usage.allocated.is_a?(Integer)
+  end
+
 end

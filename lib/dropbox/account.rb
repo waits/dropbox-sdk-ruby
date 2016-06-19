@@ -34,4 +34,14 @@ module Dropbox
       super(attrs)
     end
   end
+
+  class SpaceUsage
+    attr_reader :used, :allocation, :allocated
+
+    def initialize(attrs={})
+      @used = attrs['used'] # Space used in bytes
+      @allocation = attrs['allocation']['.tag'] # The type of allocation
+      @allocated = attrs['allocation']['allocated'] # Space allocated in bytes
+    end
+  end
 end

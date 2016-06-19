@@ -37,6 +37,7 @@ module Dropbox
       parse_tagged_response(resp, 'basic_account')
     end
 
+    # Takes an array of account IDs and returns an array of BasicAccounts
     def get_account_batch(ids)
       resp = request('/users/get_account_batch', account_ids: ids)
       resp.map { |a| parse_tagged_response(a, 'basic_account') }
@@ -55,6 +56,11 @@ module Dropbox
     def get_preview(path)
       resp, body = content_request('/files/get_preview', path: path)
       return parse_tagged_response(resp, 'file'), body
+    end
+
+    def get_space_usage
+      resp = request('/users/get_space_usage')
+      SpaceUsage.new(resp)
     end
 
     def get_temporary_link(path)

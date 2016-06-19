@@ -35,4 +35,15 @@ class DropboxAccountTest < Minitest::Test
     assert_equal false, account.disabled
     assert_equal true, account.is_paired
   end
+
+  def test_space_usage_initialize
+    usage = Dropbox::SpaceUsage.new({
+      'used' => 1,
+      'allocation' => {'.tag' => 'team', 'allocated' => 2}
+    })
+
+    assert_equal 1, usage.used
+    assert_equal 'team', usage.allocation
+    assert_equal 2, usage.allocated
+  end
 end
