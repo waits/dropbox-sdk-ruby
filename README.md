@@ -1,6 +1,8 @@
 # Dropbox SDK for Ruby
 
+[![Gem Version](https://img.shields.io/gem/v/dropbox-sdk-v2.svg?maxAge=2592000)](https://rubygems.org/gems/dropbox-sdk-v2)
 [![Build Status](https://travis-ci.org/waits/dropbox-sdk-ruby.svg?branch=master)](https://travis-ci.org/waits/dropbox-sdk-ruby)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/waits/dropbox-sdk-ruby/blob/master/LICENSE)
 
 This is a small Ruby library for accessing the new [Dropbox API](https://www.dropbox.com/developers/documentation/http/overview). It provides a single class, `Dropbox::Client`, with methods that map to most of the Dropbox API endpoints. Currently all of the endpoints in the `auth`, `files`, and `users` namespaces are supported. Sharing methods are planned.
 
