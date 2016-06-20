@@ -3,7 +3,11 @@ require 'json'
 require 'time'
 
 module Dropbox
+  # Client contains all the methods that map to the Dropbox API endpoints.
   class Client
+    # Initialize a new client.
+    #
+    # @param [String] access_token
     def initialize(access_token)
       unless access_token =~ /^[a-z0-9_-]{64}$/i
         raise ClientError.invalid_access_token
@@ -12,95 +16,173 @@ module Dropbox
       @access_token = access_token
     end
 
-    def copy(from, to)
-      resp = request('/files/copy', from_path: from, to_path: to)
+    # Copy a file or folder to a different location in the user's Dropbox.
+    #
+    # @param [String] from_path
+    # @param [String] to_path
+    # @return [Dropbox::Metadata]
+    def copy(from_path, to_path)
+      resp = request('/files/copy', from_path: from_path, to_path: to_path)
       parse_tagged_response(resp)
     end
 
+    # Create a folder at a given path.
+    #
+    # @param [String] path
+    # @return [Dropbox::FolderMetadata]
     def create_folder(path)
       resp = request('/files/create_folder', path: path)
       parse_tagged_response(resp, 'folder')
     end
 
+    # Delete the file or folder at a given path.
+    #
+    # @param [String] path
+    # @return [Dropbox::Metadata]
     def delete(path)
       resp = request('/files/delete', path: path)
       parse_tagged_response(resp)
     end
 
+    # Download a file from a user's Dropbox.
+    #
+    # @param [String] path
+    # @return [Dropbox::FileMetadata] metadata
+    # @return [HTTP::Response::Body] body
     def download(path)
       resp, body = content_request('/files/download', path: path)
       return parse_tagged_response(resp, 'file'), body
     end
 
-    def get_account(id)
-      resp = request('/users/get_account', account_id: id)
+    # Get information about a user's account.
+    #
+    # @param [String] account_id
+    # @return [Dropbox::BasicAccount]
+    def get_account(account_id)
+      resp = request('/users/get_account', account_id: account_id)
       parse_tagged_response(resp, 'basic_account')
     end
 
-    # Takes an array of account IDs and returns an array of BasicAccounts
-    def get_account_batch(ids)
+    # Get information about multiple user accounts.
+    #
+    # @param [Array<String>] account_ids
+    # @return [Array<Dropbox::BasicAccount>]
+    def get_account_batch(account_ids)
       resp = request('/users/get_account_batch', account_ids: ids)
       resp.map { |a| parse_tagged_response(a, 'basic_account') }
     end
 
+    # Get information about the current user's account.
+    #
+    # @return [Dropbox::FullAccount]
     def get_current_account
       resp = request('/users/get_current_account')
       parse_tagged_response(resp, 'full_account')
     end
 
+    # Get the metadata for a file or folder.
+    #
+    # @param [String] path
+    # @return [Dropbox::Metadata]
     def get_metadata(path)
       resp = request('/files/get_metadata', path: path)
       parse_tagged_response(resp)
     end
 
+    # Get a preview for a file.
+    #
+    # @param [String] path
+    # @return [Dropbox::FileMetadata] metadata
+    # @return [HTTP::Response::Body] body
     def get_preview(path)
       resp, body = content_request('/files/get_preview', path: path)
       return parse_tagged_response(resp, 'file'), body
     end
 
+    # Get the space usage information for the current user's account.
+    #
+    # @return [Dropbox::SpaceUsage]
     def get_space_usage
       resp = request('/users/get_space_usage')
       SpaceUsage.new(resp)
     end
 
+    # Get a temporary link to stream content of a file.
+    #
+    # @param [String] path
+    # @return [Dropbox::FileMetadata] metadata
+    # @return [String] link
     def get_temporary_link(path)
       resp = request('/files/get_temporary_link', path: path)
       return parse_tagged_response(resp['metadata'], 'file'), resp['link']
     end
 
+    # Get a thumbnail for an image.
+    #
+    # @param [String] path
+    # @param [String] format
+    # @param [String] size
+    # @return [Dropbox::FileMetadata] metadata
+    # @return [HTTP::Response::Body] body
     def get_thumbnail(path, format='jpeg', size='w64h64')
       resp, body = content_request('/files/get_thumbnail', path: path, format: format, size: size)
       return parse_tagged_response(resp, 'file'), body
     end
 
+    # Get the contents of a folder.
+    #
+    # @param [String] path
+    # @return [Array<Dropbox::Metadata]
     def list_folder(path)
       resp = request('/files/list_folder', path: path)
       resp['entries'].map { |e| parse_tagged_response(e) }
     end
 
+    # Get the revisions of a file.
+    #
+    # @param [String] path
+    # @return [Array<Dropbox::FileMetadata>] entries
+    # @return [Boolean] is_deleted
     def list_revisions(path)
       resp = request('/files/list_revisions', path: path)
       entries = resp['entries'].map { |e| parse_tagged_response(e, 'file') }
       return entries, resp['is_deleted']
     end
 
-    def move(from, to)
+    # Move a file or folder to a different location in the user's Dropbox.
+    #
+    # @param [String] from_path
+    # @param [String] to_path
+    # @return [Dropbox::Metadata]
+    def move(from_path, to_path)
       resp = request('/files/move', from_path: from, to_path: to)
       parse_tagged_response(resp)
     end
 
+    # Restore a file to a specific revision.
+    #
+    # @param [String] path
+    # @param [String] rev
+    # @return [Dropbox::FileMetadata]
     def restore(path, rev)
       resp = request('/files/restore', path: path, rev: rev)
       parse_tagged_response(resp, 'file')
     end
 
-    # Revokes the current access token and returns it
+    # Disable the access token used to authenticate the call.
+    #
+    # @return [void]
     def revoke_token
       r = HTTP.auth('Bearer ' + @access_token).post(API + '/auth/token/revoke')
       raise APIError.new(r) if r.code != 200
-      @access_token
     end
 
+    # Save a specified URL into a file in user's Dropbox.
+    #
+    # @param [String] path
+    # @param [String] url
+    # @return [String] the job id, if the processing is asynchronous.
+    # @return [Dropbox::FileMetadata] if the processing is synchronous.
     def save_url(path, url)
       resp = request('/files/save_url', path: path, url: url)
       case resp['.tag']
@@ -113,13 +195,26 @@ module Dropbox
       end
     end
 
-    def search(query, path='', max=100)
+    # Search for files and folders.
+    #
+    # @param [String] query
+    # @param [String] path
+    # @param [Integer] max_results
+    # @return [Array<Dropbox::Metadata>] matches
+    def search(query, path='', max_results=100)
       resp = request('/files/search', path: path, query: query, max_results: max)
       resp['matches'].map { |m| parse_tagged_response(m['metadata']) }
     end
 
-    # Body can be a String or an Enumerable
-    # Mode can be 'add', 'overwrite', or 'update'
+    # Create a new file.
+    #
+    # @param [String] path
+    # @param [String, Enumerable] body
+    # @param [String] mode
+    # @param [Boolean] autorename
+    # @param [String, Time] client_modified
+    # @param [Boolean] mute
+    # @return [Dropbox::FileMetadata]
     def upload(path, body, mode='add', autorename=false, client_modified=nil, mute=false)
       client_modified = client_modified.iso8601 if client_modified.is_a?(Time)
       resp = upload_request('/files/upload', body, path: path, mode: mode,

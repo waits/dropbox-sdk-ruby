@@ -29,6 +29,8 @@ gem 'dropbox-sdk-v2'
 
 ## Usage
 
+Also see the [full method documentation](http://www.rubydoc.info/gems/dropbox-sdk-v2/Dropbox/Client).
+
 Set up a client:
 ```ruby
 require 'dropbox'
