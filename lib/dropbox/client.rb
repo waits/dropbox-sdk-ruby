@@ -132,7 +132,7 @@ module Dropbox
     # Get the contents of a folder.
     #
     # @param [String] path
-    # @return [Array<Dropbox::Metadata]
+    # @return [Array<Dropbox::Metadata>]
     def list_folder(path)
       resp = request('/files/list_folder', path: path)
       resp['entries'].map { |e| parse_tagged_response(e) }
