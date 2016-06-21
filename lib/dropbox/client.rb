@@ -170,6 +170,15 @@ module Dropbox
       parse_tagged_response(resp)
     end
 
+    # Permanently delete the file or folder at a given path.
+    #
+    # @param [String] path
+    # @return [void]
+    def permanently_delete(path)
+      request('/files/permanently_delete', path: path)
+      nil
+    end
+
     # Restore a file to a specific revision.
     #
     # @param [String] path
