@@ -230,15 +230,15 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_search
-    matches = @client.search('empty')
+    matches = @client.search('', 'search')
     assert_equal 2, matches.length
     assert matches[0].is_a?(Dropbox::FolderMetadata)
     assert matches[1].is_a?(Dropbox::FileMetadata)
 
-    matches = @client.search('sub', '/folder_to_search')
+    matches = @client.search('/folder_to_search', 'sub')
     assert_equal 2, matches.length
 
-    matches = @client.search('sub', '/folder_to_search', 1)
+    matches = @client.search('/folder_to_search', 'sub', 0, 1)
     assert_equal 1, matches.length
   end
 

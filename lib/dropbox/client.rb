@@ -227,13 +227,17 @@ module Dropbox
 
     # Search for files and folders.
     #
-    # @param [String] query
     # @param [String] path
+    # @param [String] query
+    # @param [Integer] start
     # @param [Integer] max_results
+    # @param [String] mode
     # @return [Array<Dropbox::Metadata>] matches
-    def search(query, path='', max_results=100)
-      resp = request('/files/search', path: path, query: query, max_results: max_results)
-      resp['matches'].map { |m| parse_tagged_response(m['metadata']) }
+    def search(path, query, start=0, max_results=100, mode='filename')
+      resp = request('/files/search', path: path, query: query, start: start,
+        max_results: max_results, mode: mode)
+      matches = resp['matches'].map { |m| parse_tagged_response(m['metadata']) }
+      return matches
     end
 
     # Create a new file.
