@@ -32,7 +32,7 @@ module Dropbox
     # @return [Dropbox::FolderMetadata]
     def create_folder(path)
       resp = request('/files/create_folder', path: path)
-      parse_tagged_response(resp, 'folder')
+      FolderMetadata.new(resp)
     end
 
     # Delete the file or folder at a given path.
@@ -51,7 +51,7 @@ module Dropbox
     # @return [HTTP::Response::Body] body
     def download(path)
       resp, body = content_request('/files/download', path: path)
-      return parse_tagged_response(resp, 'file'), body
+      return FileMetadata.new(resp), body
     end
 
     # Get information about a user's account.
@@ -60,7 +60,7 @@ module Dropbox
     # @return [Dropbox::BasicAccount]
     def get_account(account_id)
       resp = request('/users/get_account', account_id: account_id)
-      parse_tagged_response(resp, 'basic_account')
+      BasicAccount.new(resp)
     end
 
     # Get information about multiple user accounts.
@@ -68,8 +68,8 @@ module Dropbox
     # @param [Array<String>] account_ids
     # @return [Array<Dropbox::BasicAccount>]
     def get_account_batch(account_ids)
-      resp = request('/users/get_account_batch', account_ids: ids)
-      resp.map { |a| parse_tagged_response(a, 'basic_account') }
+      resp = request('/users/get_account_batch', account_ids: account_ids)
+      resp.map { |a| BasicAccount.new(a) }
     end
 
     # Get information about the current user's account.
@@ -77,7 +77,7 @@ module Dropbox
     # @return [Dropbox::FullAccount]
     def get_current_account
       resp = request('/users/get_current_account')
-      parse_tagged_response(resp, 'full_account')
+      FullAccount.new(resp)
     end
 
     # Get the metadata for a file or folder.
@@ -96,7 +96,7 @@ module Dropbox
     # @return [HTTP::Response::Body] body
     def get_preview(path)
       resp, body = content_request('/files/get_preview', path: path)
-      return parse_tagged_response(resp, 'file'), body
+      return FileMetadata.new(resp), body
     end
 
     # Get the space usage information for the current user's account.
@@ -114,7 +114,7 @@ module Dropbox
     # @return [String] link
     def get_temporary_link(path)
       resp = request('/files/get_temporary_link', path: path)
-      return parse_tagged_response(resp['metadata'], 'file'), resp['link']
+      return FileMetadata.new(resp['metadata']), resp['link']
     end
 
     # Get a thumbnail for an image.
@@ -126,7 +126,7 @@ module Dropbox
     # @return [HTTP::Response::Body] body
     def get_thumbnail(path, format='jpeg', size='w64h64')
       resp, body = content_request('/files/get_thumbnail', path: path, format: format, size: size)
-      return parse_tagged_response(resp, 'file'), body
+      return FileMetadata.new(resp), body
     end
 
     # Get the contents of a folder.
@@ -145,7 +145,7 @@ module Dropbox
     # @return [Boolean] is_deleted
     def list_revisions(path)
       resp = request('/files/list_revisions', path: path)
-      entries = resp['entries'].map { |e| parse_tagged_response(e, 'file') }
+      entries = resp['entries'].map { |e| FileMetadata.new(e) }
       return entries, resp['is_deleted']
     end
 
@@ -155,7 +155,7 @@ module Dropbox
     # @param [String] to_path
     # @return [Dropbox::Metadata]
     def move(from_path, to_path)
-      resp = request('/files/move', from_path: from, to_path: to)
+      resp = request('/files/move', from_path: from_path, to_path: to_path)
       parse_tagged_response(resp)
     end
 
@@ -166,7 +166,7 @@ module Dropbox
     # @return [Dropbox::FileMetadata]
     def restore(path, rev)
       resp = request('/files/restore', path: path, rev: rev)
-      parse_tagged_response(resp, 'file')
+      FileMetadata.new(resp)
     end
 
     # Disable the access token used to authenticate the call.
@@ -187,7 +187,7 @@ module Dropbox
       resp = request('/files/save_url', path: path, url: url)
       case resp['.tag']
       when 'complete'
-        parse_tagged_response(resp['complete'], 'file')
+        FileMetadata.new(resp['complete'])
       when 'async_job_id'
         resp['async_job_id']
       else
@@ -202,7 +202,7 @@ module Dropbox
     # @param [Integer] max_results
     # @return [Array<Dropbox::Metadata>] matches
     def search(query, path='', max_results=100)
-      resp = request('/files/search', path: path, query: query, max_results: max)
+      resp = request('/files/search', path: path, query: query, max_results: max_results)
       resp['matches'].map { |m| parse_tagged_response(m['metadata']) }
     end
 
@@ -219,12 +219,12 @@ module Dropbox
       client_modified = client_modified.iso8601 if client_modified.is_a?(Time)
       resp = upload_request('/files/upload', body, path: path, mode: mode,
         autorename: autorename, client_modified: client_modified, mute: mute)
-      parse_tagged_response(resp, 'file')
+      FileMetadata.new(resp)
     end
 
     private
-      def parse_tagged_response(resp, tag=resp['.tag'])
-        case tag
+      def parse_tagged_response(resp)
+        case resp['.tag']
         when 'file'
           FileMetadata.new(resp)
         when 'folder'
@@ -236,7 +236,7 @@ module Dropbox
         when 'full_account'
           FullAccount.new(resp)
         else
-          raise ClientError.unknown_response_type(tag)
+          raise ClientError.unknown_response_type(resp['.tag'])
         end
       end
 

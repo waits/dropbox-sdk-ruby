@@ -135,6 +135,12 @@ class DropboxFilesTest < Minitest::Test
     assert_equal 4, entries[1].size
   end
 
+  def test_list_folder_empty
+    entries = @client.list_folder('/empty_folder')
+
+    assert_equal 0, entries.length
+  end
+
   def test_list_folder_error
     assert_raises(Dropbox::APIError) do
       @client.list_folder('/file.txt')
@@ -196,10 +202,10 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_search
-    matches = @client.search('folder')
-    assert_equal 3, matches.length
-    assert matches[2].is_a?(Dropbox::FolderMetadata)
-    assert_equal 'folder_to_search', matches[2].name
+    matches = @client.search('empty')
+    assert_equal 2, matches.length
+    assert matches[0].is_a?(Dropbox::FolderMetadata)
+    assert matches[1].is_a?(Dropbox::FileMetadata)
 
     matches = @client.search('sub', '/folder_to_search')
     assert_equal 2, matches.length
