@@ -72,6 +72,17 @@ module Dropbox
       resp.map { |a| BasicAccount.new(a) }
     end
 
+    # Get a copy reference to a file or folder.
+    #
+    # @param [String] path
+    # @return [Dropbox::Metadata] metadata
+    # @return [String] copy_reference
+    def get_copy_reference(path)
+      resp = request('/files/copy_reference/get', path: path)
+      metadata = parse_tagged_response(resp['metadata'])
+      return metadata, resp['copy_reference']
+    end
+
     # Get information about the current user's account.
     #
     # @return [Dropbox::FullAccount]
@@ -175,6 +186,16 @@ module Dropbox
     def revoke_token
       r = HTTP.auth('Bearer ' + @access_token).post(API + '/auth/token/revoke')
       raise APIError.new(r) if r.code != 200
+    end
+
+    # Save a copy reference to the user's Dropbox.
+    #
+    # @param [String] copy_reference
+    # @param [String] path
+    # @return [Dropbox::Metadata] metadata
+    def save_copy_reference(copy_reference, path)
+      resp = request('/files/copy_reference/save', copy_reference: copy_reference, path: path)
+      parse_tagged_response(resp['metadata'])
     end
 
     # Save a specified URL into a file in user's Dropbox.

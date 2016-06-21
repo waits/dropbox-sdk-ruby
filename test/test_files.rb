@@ -68,6 +68,28 @@ class DropboxFilesTest < Minitest::Test
     end
   end
 
+# TODO: Getting 500 errors from the API. Mention it to Dropbox.
+#
+#   def test_get_save_copy_reference
+#     meta, ref = @client.get_copy_reference('/file.txt')
+#
+#     assert meta.is_a?(Dropbox::FileMetadata)
+#     assert ref.is_a?(String)
+#     assert_match /^[a-z0-9]+$/i, ref
+#
+#     saved_meta = @client.save_copy_reference('/copied_file.txt')
+#
+#     assert meta.is_a?(Dropbox::FileMetadata)
+#     assert_equal 'copied_file.txt', file.name
+#     assert_equal 22, file.size
+#   end
+
+  def test_get_copy_reference_error
+    assert_raises(Dropbox::APIError) do
+      @client.get_copy_reference('/not_found')
+    end
+  end
+
   def test_get_metadata
     file = @client.get_metadata('/file.txt')
 
@@ -198,6 +220,12 @@ class DropboxFilesTest < Minitest::Test
   def test_save_url_error
     assert_raises(Dropbox::APIError) do
       @client.save_url('/saved_file.txt', 'ht:/invalid_url')
+    end
+  end
+
+  def test_save_copy_reference_error
+    assert_raises(Dropbox::APIError) do
+      @client.save_copy_reference('invalid', '/saved_copy_reference.txt')
     end
   end
 
