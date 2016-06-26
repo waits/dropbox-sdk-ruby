@@ -22,4 +22,24 @@ class DropboxMetadataTest < Minitest::Test
     assert_equal '/folder/file', file.path_display
     assert_equal 11, file.size
   end
+
+  def test_folder_equality
+    a = Dropbox::FolderMetadata.new('id' => 'id:123', 'name' => 'child',
+      'path_lower' => '/parent/middle/child', 'path_display' => '/parent/middle/child')
+    b = Dropbox::FolderMetadata.new('id' => 'id:123', 'name' => 'child',
+      'path_lower' => '/parent/middle/child', 'path_display' => '/parent/middle/child')
+
+    assert_equal a, b
+  end
+
+  def test_file_equality
+    a = Dropbox::FileMetadata.new('id' => 'id:123', 'name' => 'file',
+      'path_lower' => '/folder/file', 'path_display' => '/folder/file',
+      'size' => 11, 'server_modified' => '2007-07-07T00:00:00Z')
+    b = Dropbox::FileMetadata.new('id' => 'id:123', 'name' => 'file',
+      'path_lower' => '/folder/file', 'path_display' => '/folder/file',
+      'size' => 11, 'server_modified' => '2007-07-07T00:00:00Z')
+
+    assert_equal a, b
+  end
 end

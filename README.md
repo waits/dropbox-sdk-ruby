@@ -1,6 +1,6 @@
 # Dropbox SDK for Ruby
 
-[![Gem Version](https://img.shields.io/gem/v/dropbox-sdk-v2.svg?maxAge=2592000)](https://rubygems.org/gems/dropbox-sdk-v2)
+[![Gem Version](https://img.shields.io/gem/v/dropbox-sdk-v2.svg)](https://rubygems.org/gems/dropbox-sdk-v2)
 [![Build Status](https://travis-ci.org/waits/dropbox-sdk-ruby.svg?branch=master)](https://travis-ci.org/waits/dropbox-sdk-ruby)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/waits/dropbox-sdk-ruby/blob/master/LICENSE)
 

@@ -24,6 +24,10 @@ module Dropbox
       @size = attrs.delete('size')
       super(attrs)
     end
+
+    def ==(cmp)
+      cmp.is_a?(self.class) && self.id == cmp.id
+    end
   end
 
   class FolderMetadata < Metadata
@@ -32,6 +36,10 @@ module Dropbox
     def initialize(attrs={})
       @id = attrs.delete('id')
       super(attrs)
+    end
+
+    def ==(cmp)
+      cmp.is_a?(self.class) && self.id == cmp.id
     end
   end
 
