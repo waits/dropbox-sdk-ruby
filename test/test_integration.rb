@@ -34,6 +34,21 @@ class DropboxIntegrationTest < Minitest::Test
 
     restored = @client.restore(file.path_lower, file.rev)
     assert_equal file, restored
+
+    job_id = @client.save_url(@box.path_lower + '/robots.txt', 'https://www.dropbox.com/robots.txt')
+    status = nil
+    while status == nil
+      status = @client.check_save_url_job_status(job_id)
+    end
+    assert status.is_a?(Dropbox::FileMetadata)
+    assert_equal 'robots.txt', status.name
+
+    job_id = @client.save_url('/nothing.txt', 'https://www.google.com/404')
+    status = nil
+    while status == nil
+      status = @client.check_save_url_job_status(job_id)
+    end
+    assert status.is_a?(String)
   end
 
   def test_folders
