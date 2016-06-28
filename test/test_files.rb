@@ -169,6 +169,18 @@ class DropboxFilesTest < Minitest::Test
     end
   end
 
+  def test_get_latest_list_folder_cursor
+    cursor = @client.get_latest_list_folder_cursor('/folder_to_list')
+    assert_instance_of String, cursor
+    assert_match /^[a-z0-9_-]+$/i, cursor
+  end
+
+  def test_continue_list_folder_error
+    assert_raises(Dropbox::APIError) do
+      @client.continue_list_folder(nil)
+    end
+  end
+
   def test_list_revisions
     entries, is_deleted = @client.list_revisions('/file.txt')
 

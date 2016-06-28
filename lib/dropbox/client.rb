@@ -14,15 +14,12 @@ module Dropbox
       @access_token = access_token
     end
 
-    # Check the status of a save_url job.
+    # Disable the access token used to authenticate the call.
     #
-    # @param [String] async_job_id
-    # @return [nil] if the job is still in progress.
-    # @return [Dropbox::FileMetadata] if the job is complete.
-    # @return [String] an error message, if the job failed.
-    def check_save_url_job_status(async_job_id)
-      resp = request('/files/save_url/check_job_status', async_job_id: async_job_id)
-      parse_save_url_response(resp)
+    # @return [void]
+    def revoke_token
+      r = HTTP.auth('Bearer ' + @access_token).post(API + '/auth/token/revoke')
+      raise APIError.new(r) if r.code != 200
     end
 
     # Copy a file or folder to a different location in the user's Dropbox.
@@ -33,6 +30,27 @@ module Dropbox
     def copy(from_path, to_path)
       resp = request('/files/copy', from_path: from_path, to_path: to_path)
       parse_tagged_response(resp)
+    end
+
+    # Get a copy reference to a file or folder.
+    #
+    # @param [String] path
+    # @return [Dropbox::Metadata] metadata
+    # @return [String] copy_reference
+    def get_copy_reference(path)
+      resp = request('/files/copy_reference/get', path: path)
+      metadata = parse_tagged_response(resp['metadata'])
+      return metadata, resp['copy_reference']
+    end
+
+    # Save a copy reference to the user's Dropbox.
+    #
+    # @param [String] copy_reference
+    # @param [String] path
+    # @return [Dropbox::Metadata] metadata
+    def save_copy_reference(copy_reference, path)
+      resp = request('/files/copy_reference/save', copy_reference: copy_reference, path: path)
+      parse_tagged_response(resp['metadata'])
     end
 
     # Create a folder at a given path.
@@ -63,43 +81,6 @@ module Dropbox
       return FileMetadata.new(resp), body
     end
 
-    # Get information about a user's account.
-    #
-    # @param [String] account_id
-    # @return [Dropbox::BasicAccount]
-    def get_account(account_id)
-      resp = request('/users/get_account', account_id: account_id)
-      BasicAccount.new(resp)
-    end
-
-    # Get information about multiple user accounts.
-    #
-    # @param [Array<String>] account_ids
-    # @return [Array<Dropbox::BasicAccount>]
-    def get_account_batch(account_ids)
-      resp = request('/users/get_account_batch', account_ids: account_ids)
-      resp.map { |a| BasicAccount.new(a) }
-    end
-
-    # Get a copy reference to a file or folder.
-    #
-    # @param [String] path
-    # @return [Dropbox::Metadata] metadata
-    # @return [String] copy_reference
-    def get_copy_reference(path)
-      resp = request('/files/copy_reference/get', path: path)
-      metadata = parse_tagged_response(resp['metadata'])
-      return metadata, resp['copy_reference']
-    end
-
-    # Get information about the current user's account.
-    #
-    # @return [Dropbox::FullAccount]
-    def get_current_account
-      resp = request('/users/get_current_account')
-      FullAccount.new(resp)
-    end
-
     # Get the metadata for a file or folder.
     #
     # @param [String] path
@@ -117,14 +98,6 @@ module Dropbox
     def get_preview(path)
       resp, body = content_request('/files/get_preview', path: path)
       return FileMetadata.new(resp), body
-    end
-
-    # Get the space usage information for the current user's account.
-    #
-    # @return [Dropbox::SpaceUsage]
-    def get_space_usage
-      resp = request('/users/get_space_usage')
-      SpaceUsage.new(resp)
     end
 
     # Get a temporary link to stream content of a file.
@@ -156,6 +129,24 @@ module Dropbox
     def list_folder(path)
       resp = request('/files/list_folder', path: path)
       resp['entries'].map { |e| parse_tagged_response(e) }
+    end
+
+    # Get the contents of a folder that are after a cursor.
+    #
+    # @param [String] cursor
+    # @return [Array<Dropbox::Metadata>]
+    def continue_list_folder(cursor)
+      resp = request('/files/list_folder/continue', cursor: cursor)
+      resp['entries'].map { |e| parse_tagged_response(e) }
+    end
+
+    # Get a cursor for a folder's current state.
+    #
+    # @param [String] path
+    # @return [String] cursor
+    def get_latest_list_folder_cursor(path)
+      resp = request('/files/list_folder/get_latest_cursor', path: path)
+      resp['cursor']
     end
 
     # Get the revisions of a file.
@@ -198,24 +189,6 @@ module Dropbox
       FileMetadata.new(resp)
     end
 
-    # Disable the access token used to authenticate the call.
-    #
-    # @return [void]
-    def revoke_token
-      r = HTTP.auth('Bearer ' + @access_token).post(API + '/auth/token/revoke')
-      raise APIError.new(r) if r.code != 200
-    end
-
-    # Save a copy reference to the user's Dropbox.
-    #
-    # @param [String] copy_reference
-    # @param [String] path
-    # @return [Dropbox::Metadata] metadata
-    def save_copy_reference(copy_reference, path)
-      resp = request('/files/copy_reference/save', copy_reference: copy_reference, path: path)
-      parse_tagged_response(resp['metadata'])
-    end
-
     # Save a specified URL into a file in user's Dropbox.
     #
     # @param [String] path
@@ -224,6 +197,17 @@ module Dropbox
     # @return [Dropbox::FileMetadata] if the processing is synchronous.
     def save_url(path, url)
       resp = request('/files/save_url', path: path, url: url)
+      parse_save_url_response(resp)
+    end
+
+    # Check the status of a save_url job.
+    #
+    # @param [String] async_job_id
+    # @return [nil] if the job is still in progress.
+    # @return [Dropbox::FileMetadata] if the job is complete.
+    # @return [String] an error message, if the job failed.
+    def check_save_url_job_status(async_job_id)
+      resp = request('/files/save_url/check_job_status', async_job_id: async_job_id)
       parse_save_url_response(resp)
     end
 
@@ -294,6 +278,40 @@ module Dropbox
       args = {cursor: cursor.to_h, commit: options}
       resp = upload_request('/files/upload_session/finish', body, args)
       FileMetadata.new(resp)
+    end
+
+    # Get information about a user's account.
+    #
+    # @param [String] account_id
+    # @return [Dropbox::BasicAccount]
+    def get_account(account_id)
+      resp = request('/users/get_account', account_id: account_id)
+      BasicAccount.new(resp)
+    end
+
+    # Get information about multiple user accounts.
+    #
+    # @param [Array<String>] account_ids
+    # @return [Array<Dropbox::BasicAccount>]
+    def get_account_batch(account_ids)
+      resp = request('/users/get_account_batch', account_ids: account_ids)
+      resp.map { |a| BasicAccount.new(a) }
+    end
+
+    # Get information about the current user's account.
+    #
+    # @return [Dropbox::FullAccount]
+    def get_current_account
+      resp = request('/users/get_current_account')
+      FullAccount.new(resp)
+    end
+
+    # Get the space usage information for the current user's account.
+    #
+    # @return [Dropbox::SpaceUsage]
+    def get_space_usage
+      resp = request('/users/get_space_usage')
+      SpaceUsage.new(resp)
     end
 
     private
