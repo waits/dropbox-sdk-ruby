@@ -5,8 +5,6 @@ require 'time'
 module Dropbox
   # Client contains all the methods that map to the Dropbox API endpoints.
   class Client
-    # Initialize a new client.
-    #
     # @param [String] access_token
     def initialize(access_token)
       unless access_token =~ /^[a-z0-9_-]{64}$/i
@@ -18,7 +16,7 @@ module Dropbox
 
     # Check the status of a save_url job.
     #
-    # @param[String] async_job_id
+    # @param [String] async_job_id
     # @return [nil] if the job is still in progress.
     # @return [Dropbox::FileMetadata] if the job is complete.
     # @return [String] an error message, if the job failed.
@@ -248,15 +246,53 @@ module Dropbox
     #
     # @param [String] path
     # @param [String, Enumerable] body
-    # @param [String] mode
-    # @param [Boolean] autorename
-    # @param [String, Time] client_modified
-    # @param [Boolean] mute
+    # @option options [String] :mode
+    # @option options [Boolean] :autorename
+    # @option options [Boolean] :mute
     # @return [Dropbox::FileMetadata]
-    def upload(path, body, mode='add', autorename=false, client_modified=nil, mute=false)
-      client_modified = client_modified.iso8601 if client_modified.is_a?(Time)
-      resp = upload_request('/files/upload', body, path: path, mode: mode,
-        autorename: autorename, client_modified: client_modified, mute: mute)
+    def upload(path, body, options={})
+      options[:client_modified] = Time.now.utc.iso8601
+      options[:path] = path
+      resp = upload_request('/files/upload', body, options.merge(path: path))
+      FileMetadata.new(resp)
+    end
+
+    # Start an upload session to upload a file using multiple requests.
+    #
+    # @param [String, Enumerable] body
+    # @param [Boolean] close
+    # @return [Dropbox::UploadSessionCursor] cursor
+    def start_upload_session(body, close=false)
+      resp = upload_request('/files/upload_session/start', body, close: close)
+      UploadSessionCursor.new(resp['session_id'], body.length)
+    end
+
+    # Append more data to an upload session.
+    #
+    # @param [Dropbox::UploadSessionCursor] cursor
+    # @param [String, Enumerable] body
+    # @param [Boolean] close
+    # @return [Dropbox::UploadSessionCursor] cursor
+    def append_upload_session(cursor, body, close=false)
+      args = {cursor: cursor.to_h, close: close}
+      resp = upload_request('/files/upload_session/append_v2', body, args)
+      cursor.offset += body.length
+      cursor
+    end
+
+    # Finish an upload session and save the uploaded data to the given file path.
+    #
+    # @param [Dropbox::UploadSessionCursor] cursor
+    # @param [String] path
+    # @param [String, Enumerable] body
+    # @param [Hash] options
+    # @option (see #upload)
+    # @return [Dropbox::FileMetadata]
+    def finish_upload_session(cursor, path, body, options={})
+      options[:client_modified] = Time.now.utc.iso8601
+      options[:path] = path
+      args = {cursor: cursor.to_h, commit: options}
+      resp = upload_request('/files/upload_session/finish', body, args)
       FileMetadata.new(resp)
     end
 
@@ -321,7 +357,7 @@ module Dropbox
         }).post(CONTENT_API + action, body: body)
 
         raise APIError.new(resp) if resp.code != 200
-        JSON.parse(resp.to_s)
+        JSON.parse(resp.to_s) unless resp.to_s == 'null'
       end
   end
 end

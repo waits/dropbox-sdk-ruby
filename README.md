@@ -29,7 +29,7 @@ gem 'dropbox-sdk-v2'
 
 ## Usage
 
-Also see the [full method documentation](http://www.rubydoc.info/gems/dropbox-sdk-v2/Dropbox/Client).
+Also see the [full YARD documentation](http://www.rubydoc.info/github/waits/dropbox-sdk-ruby).
 
 Set up a client:
 ```ruby
@@ -48,16 +48,16 @@ folder.path_lower # => "/myfolder"
 
 Upload a file:
 ```ruby
-file = dbx.upload('/myfolder/file.txt', 'the file contents') # Accepts a String or File
-file.class # => Dropbox::FileMetadata
-file.size # => 17
+# File body can be a String, File, or any Enumerable.
+file = dbx.upload('/myfolder/file.txt', 'file body') # => Dropbox::FileMetadata
+file.size # => 9
 file.rev # => a1c10ce0dd78
 ```
 
 Download a file:
 ```ruby
 file, body = dbx.download('/myfolder/file.txt') # => Dropbox::FileMetadata, HTTP::Response::Body
-body.to_s # => "the file contents"
+body.to_s # => "file body"
 ```
 
 Delete a file:

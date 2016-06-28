@@ -249,26 +249,33 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_upload_string
-    modified = Time.parse('2007-07-07T00:00:00Z')
-    file = @client.upload('/uploaded_string.txt', 'dropbox', 'overwrite', false, modified)
+    now = Time.now.utc
+    file = @client.upload('/uploaded_string.txt', 'dropbox', mode: 'overwrite',
+      autorename: false)
 
-    assert file.is_a?(Dropbox::FileMetadata)
-    assert_equal 7, file.size
-    assert_equal modified, file.client_modified
+    assert_instance_of(Dropbox::FileMetadata, file)
+    assert_equal(7, file.size)
+    assert_in_delta(now.to_i, file.client_modified.to_i, 5, "Expected #{file.client_modified} to be near #{now}")
+
+    @client.delete('/uploaded_string.txt')
   end
 
   def test_upload_file
     File.open('LICENSE') do |f|
-      meta = @client.upload('/license.txt', f, 'overwrite')
+      now = Time.now.utc
+      meta = @client.upload('/license.txt', f, mode: 'overwrite')
 
-      assert meta.is_a?(Dropbox::FileMetadata)
-      assert_equal 1078, meta.size
+      assert_instance_of(Dropbox::FileMetadata, meta)
+      assert_equal(1078, meta.size)
+      assert_in_delta(now.to_i, meta.client_modified.to_i, 5, "Expected #{meta.client_modified} to be near #{now}")
     end
+
+    @client.delete('/license.txt')
   end
 
   def test_upload_conflict
     assert_raises(Dropbox::APIError) do
-      @client.upload('/uploaded_file.txt', 'dropbocks', 'add', false)
+      @client.upload('/uploaded_file.txt', 'dropbocks', mode: 'add', autorename: false)
     end
   end
 end
