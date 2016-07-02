@@ -197,7 +197,7 @@ module Dropbox
     # @return [Dropbox::FileMetadata] if the processing is synchronous.
     def save_url(path, url)
       resp = request('/files/save_url', path: path, url: url)
-      parse_save_url_response(resp)
+      parse_tagged_response(resp)
     end
 
     # Check the status of a save_url job.
@@ -208,7 +208,7 @@ module Dropbox
     # @return [String] an error message, if the job failed.
     def check_save_url_job_status(async_job_id)
       resp = request('/files/save_url/check_job_status', async_job_id: async_job_id)
-      parse_save_url_response(resp)
+      parse_tagged_response(resp)
     end
 
     # Search for files and folders.
@@ -315,21 +315,6 @@ module Dropbox
     end
 
     private
-      def parse_save_url_response(resp)
-        case resp['.tag']
-        when 'complete'
-          FileMetadata.new(resp)
-        when 'async_job_id'
-          resp['async_job_id']
-        when 'in_progress'
-          nil
-        when 'failed'
-          resp['failed']['.tag']
-        else
-          raise ClientError.unknown_response_type(resp['.tag'])
-        end
-      end
-
       def parse_tagged_response(resp)
         case resp['.tag']
         when 'file'
@@ -342,6 +327,14 @@ module Dropbox
           BasicAccount.new(resp)
         when 'full_account'
           FullAccount.new(resp)
+        when 'complete'
+          FileMetadata.new(resp)
+        when 'async_job_id'
+          resp['async_job_id']
+        when 'in_progress'
+          nil
+        when 'failed'
+          resp['failed']['.tag']
         else
           raise ClientError.unknown_response_type(resp['.tag'])
         end
