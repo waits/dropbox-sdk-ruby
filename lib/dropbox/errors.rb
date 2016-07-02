@@ -1,6 +1,7 @@
 require 'json'
 
 module Dropbox
+  # Thrown when Dropbox::Client encounters an error unrelated to the API.
   class ClientError < StandardError
     attr_reader :message
 
@@ -21,7 +22,8 @@ module Dropbox
     end
   end
 
-  class APIError < StandardError
+  # Thrown when the API returns an error response.
+  class ApiError < StandardError
     attr_reader :message
 
     def initialize(response)

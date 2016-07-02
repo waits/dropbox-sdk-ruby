@@ -15,7 +15,7 @@ class DropboxUsersTest < Minitest::Test
   end
 
   def test_get_account_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.get_account('invalid_id')
     end
   end
@@ -30,7 +30,7 @@ class DropboxUsersTest < Minitest::Test
   end
 
   def test_get_account_batch_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.get_account_batch(['invalid_id'])
     end
   end

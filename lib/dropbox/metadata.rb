@@ -1,6 +1,7 @@
 require 'time'
 
 module Dropbox
+  # Abstract class inherited by the other metadata classes.
   class Metadata
     attr_reader :name, :path_lower, :path_display
 
@@ -11,6 +12,7 @@ module Dropbox
     end
   end
 
+  # Contains the metadata (but not contents) of a file.
   class FileMetadata < Metadata
     attr_reader :id, :client_modified, :server_modified, :rev, :size
 
@@ -30,6 +32,7 @@ module Dropbox
     end
   end
 
+  # Contains the metadata (but not contents) of a folder.
   class FolderMetadata < Metadata
     attr_reader :id
 
@@ -43,6 +46,7 @@ module Dropbox
     end
   end
 
+  # Contains the metadata of a deleted file.
   class DeletedMetadata < Metadata
   end
 end

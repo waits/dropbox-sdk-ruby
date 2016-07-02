@@ -19,7 +19,7 @@ module Dropbox
     # @return [void]
     def revoke_token
       r = HTTP.auth('Bearer ' + @access_token).post(API + '/auth/token/revoke')
-      raise APIError.new(r) if r.code != 200
+      raise ApiError.new(r) if r.code != 200
     end
 
     # Copy a file or folder to a different location in the user's Dropbox.
@@ -346,7 +346,7 @@ module Dropbox
           .headers(content_type: ('application/json' if data))
           .post(url, json: data)
 
-        raise APIError.new(resp) if resp.code != 200
+        raise ApiError.new(resp) if resp.code != 200
         JSON.parse(resp.to_s)
       end
 
@@ -355,7 +355,7 @@ module Dropbox
         resp = HTTP.auth('Bearer ' + @access_token)
           .headers('Dropbox-API-Arg' => args.to_json).get(url)
 
-        raise APIError.new(resp) if resp.code != 200
+        raise ApiError.new(resp) if resp.code != 200
         file = JSON.parse(resp.headers['Dropbox-API-Result'])
         return file, resp.body
       end
@@ -367,7 +367,7 @@ module Dropbox
           'Transfer-Encoding' => ('chunked' unless body.is_a?(String))
         }).post(CONTENT_API + action, body: body)
 
-        raise APIError.new(resp) if resp.code != 200
+        raise ApiError.new(resp) if resp.code != 200
         JSON.parse(resp.to_s) unless resp.to_s == 'null'
       end
   end

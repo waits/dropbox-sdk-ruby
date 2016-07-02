@@ -15,13 +15,13 @@ class DropboxErrorTest < Minitest::Test
     resp = HTTP::Response.new(status: 404, version: '1.1',
       headers: {'Content-Type' => 'application/json'},
       body: '{"error_summary": "Resource not found"}')
-    err = Dropbox::APIError.new(resp)
+    err = Dropbox::ApiError.new(resp)
     assert_equal 'Resource not found', err.to_s
 
     resp = HTTP::Response.new(status: 500, version: '1.1',
       headers: {'Content-Type' => 'text/html'},
       body: '<html><body>Server error</body></html>')
-    err = Dropbox::APIError.new(resp)
+    err = Dropbox::ApiError.new(resp)
     assert_equal '<html><body>Server error</body></html>', err.to_s
   end
 end

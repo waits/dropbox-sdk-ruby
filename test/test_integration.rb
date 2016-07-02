@@ -77,7 +77,7 @@ class DropboxIntegrationTest < Minitest::Test
 
     deleted_folder = @client.delete(folder.path_lower)
     assert_equal folder, deleted_folder
-    assert_raises(Dropbox::APIError) { @client.delete(folder.path_lower) }
+    assert_raises(Dropbox::ApiError) { @client.delete(folder.path_lower) }
   end
 
   def test_upload_session

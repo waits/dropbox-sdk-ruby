@@ -17,7 +17,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_copy_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.copy('/empty_folder', '/empty_folder')
     end
   end
@@ -35,7 +35,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_create_folder_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.create_folder('malformed')
     end
   end
@@ -50,7 +50,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_delete_folder_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.delete('/doesnotexist')
     end
   end
@@ -63,7 +63,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_download_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.download('/does_not_exist')
     end
   end
@@ -85,7 +85,7 @@ class DropboxFilesTest < Minitest::Test
 #   end
 
   def test_get_copy_reference_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.get_copy_reference('/not_found')
     end
   end
@@ -102,7 +102,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_get_metadata_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.get_metadata('/does_not_exist')
     end
   end
@@ -115,7 +115,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_get_preview_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.get_preview('/file.txt')
     end
   end
@@ -130,7 +130,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_get_temporary_link_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.get_temporary_link('/folder_to_search')
     end
   end
@@ -142,7 +142,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_get_thumbnail_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.get_thumbnail('/file.txt')
     end
   end
@@ -164,7 +164,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_list_folder_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.list_folder('/file.txt')
     end
   end
@@ -176,7 +176,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_continue_list_folder_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.continue_list_folder(nil)
     end
   end
@@ -189,7 +189,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_list_revisions_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.list_revisions('/folder_to_search')
     end
   end
@@ -204,7 +204,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_move_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.move('/does_not_exist', '/does_not_exist')
     end
   end
@@ -217,7 +217,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_restore_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.restore('/file.txt', 'xyz')
     end
   end
@@ -230,13 +230,13 @@ class DropboxFilesTest < Minitest::Test
 #   end
 
   def test_save_url_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.save_url('/saved_file.txt', 'ht:/invalid_url')
     end
   end
 
   def test_save_copy_reference_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.save_copy_reference('invalid', '/saved_copy_reference.txt')
     end
   end
@@ -255,7 +255,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_search_error
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.search('subfolder', '/')
     end
   end
@@ -286,7 +286,7 @@ class DropboxFilesTest < Minitest::Test
   end
 
   def test_upload_conflict
-    assert_raises(Dropbox::APIError) do
+    assert_raises(Dropbox::ApiError) do
       @client.upload('/uploaded_file.txt', 'dropbocks', mode: 'add', autorename: false)
     end
   end
