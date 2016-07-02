@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'dropbox-sdk-v2'
-  s.version     = '0.0.2'
+  s.version     = '0.0.3'
   s.summary     = 'Dropbox SDK v2'
   s.description = 'A Ruby library for the new Dropbox API.'
   s.authors     = ['Dylan Waits']
