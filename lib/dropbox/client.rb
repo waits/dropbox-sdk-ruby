@@ -135,13 +135,13 @@ module Dropbox
       include_media_info = false,
       include_deleted = false,
       include_has_explicit_shared_members = false	)
-      resp = request('/files/list_folder',
+      resp = request('/files/list_folder',{
         path: path,
         recursive: recursive,
         include_media_info: include_media_info,
         include_deleted: include_deleted,
         include_has_explicit_shared_members: include_has_explicit_shared_members
-        )
+      })
       resp['entries'].map { |e| parse_tagged_response(e) }
     end
 
