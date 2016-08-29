@@ -1,15 +1,15 @@
-require 'minitest/autorun'
-require 'dropbox'
-require 'time'
+require 'test_helper'
 
 class DropboxIntegrationTest < Minitest::Test
   def setup
+    WebMock.allow_net_connect!
     @client = Dropbox::Client.new(ENV['DROPBOX_SDK_ACCESS_TOKEN'])
     @box = @client.create_folder('/integration_test_container')
   end
 
   def teardown
     @client.delete(@box.path_lower)
+    WebMock.disable_net_connect!
   end
 
   def test_files
@@ -36,7 +36,7 @@ class DropboxIntegrationTest < Minitest::Test
     restored = @client.restore(file.path_lower, file.rev)
     assert_equal file, restored
 
-    job_id = @client.save_url(@box.path_lower + '/robots.txt', 'https://www.dropbox.com/robots.txt')
+    job_id = @client.save_url(@box.path_lower + '/robots.txt', 'https://github.com/robots.txt')
     status = nil
     while status == nil
       status = @client.check_save_url_job_status(job_id)
@@ -92,7 +92,7 @@ class DropboxIntegrationTest < Minitest::Test
     cursor = @client.append_upload_session(cursor, "Upload session part 3\n", false)
     assert_equal 66, cursor.offset
 
-    file = @client.finish_upload_session(cursor, "/large_file.txt", "Finished\n")
+    file = @client.finish_upload_session(cursor, @box.path_lower + "/large_file.txt", "Finished\n")
     assert_instance_of Dropbox::FileMetadata, file
     assert_equal 75, file.size
   end

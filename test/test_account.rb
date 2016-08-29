@@ -1,5 +1,4 @@
-require 'minitest/autorun'
-require 'dropbox'
+require 'test_helper'
 
 class DropboxAccountTest < Minitest::Test
   def test_basic_account_initialize

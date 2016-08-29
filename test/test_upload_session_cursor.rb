@@ -1,5 +1,4 @@
-require 'minitest/autorun'
-require 'dropbox'
+require 'test_helper'
 
 class DropboxUploadSessionCursorTest < Minitest::Test
   def test_upload_session_cursor

@@ -1,5 +1,4 @@
-require 'minitest/autorun'
-require 'dropbox'
+require 'test_helper'
 require 'time'
 
 class DropboxMetadataTest < Minitest::Test

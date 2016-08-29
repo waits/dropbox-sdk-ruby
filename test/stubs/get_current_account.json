@@ -1,0 +1,23 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "account_id": "dbid:AAH4f99T0taONIb-OurWxbNQ6ywGRopQngc",
+    "name": {
+        "given_name": "Franz",
+        "surname": "Ferdinand",
+        "familiar_name": "Franz",
+        "display_name": "Franz Ferdinand (Personal)"
+    },
+    "email": "franz@gmail.com",
+    "email_verified": false,
+    "disabled": false,
+    "locale": "en",
+    "referral_link": "https://db.tt/ZITNuhtI",
+    "is_paired": false,
+    "account_type": {
+        ".tag": "basic"
+    },
+    "profile_photo_url": "https://dl-web.dropbox.com/account_photo/get/dbid%3AAAH4f99T0taONIb-OurWxbNQ6ywGRopQngc?vers=1453416673259&size=128x128",
+    "country": "US"
+}

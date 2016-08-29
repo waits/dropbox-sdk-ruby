@@ -1,6 +1,5 @@
-require 'minitest/autorun'
+require 'test_helper'
 require 'http'
-require 'dropbox'
 
 class DropboxErrorTest < Minitest::Test
   def test_client_error

@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "used": 314159265,
+    "allocation": {
+        ".tag": "individual",
+        "allocated": 10000000000
+    }
+}

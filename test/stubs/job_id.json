@@ -1,0 +1,7 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    ".tag": "async_job_id",
+    "async_job_id": "a1c10ce0dd78a1c10ce0dd"
+}
