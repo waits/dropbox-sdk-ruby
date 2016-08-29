@@ -10,6 +10,7 @@ dist: trusty
 
 before_install:
   - gem install minitest -v '5.9.0'
+  - gem install webmock -v '2.1.0'
   - gem install http -v '2.0.1'
 script: rake test
 
