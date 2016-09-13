@@ -327,6 +327,32 @@ module Dropbox
       parse_tagged_response(resp)
     end
 
+    # Add a member to a shared folder
+    # @param shared_folder_id [String] The shared_id of the folder
+    # @param members [Array<String>] An array of emails as Strings.
+    # @param quiet [Boolean] defaults to false
+    # @param custom_message [String] A custom message to be sent to all of the members. Defaults to nil.
+    # @param access_level [String] The access level given to all members. Can be 'editor', 'viewer' or 'viewer_no_comment'. Defaults to 'editor'.
+    # @return [void]
+    def add_folder_member(shared_folder_id:, members:, quiet: false, custom_message: nil, access_level: 'editor')
+      params = {shared_folder_id: shared_folder_id, quiet: quiet}
+      params[:members] = members.map do |member|
+        {
+          'member' => {
+            '.tag' => 'email',
+            'email' => member
+          },
+          'access_level' => {
+            '.tag' => access_level
+          }
+        }
+      end
+      params[:custom_message] = custom_message if custom_message
+
+      request('/sharing/add_folder_member', params)
+      nil
+    end
+
     private
       def parse_tagged_response(resp)
         case resp['.tag']
