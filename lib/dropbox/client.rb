@@ -364,7 +364,7 @@ module Dropbox
           .post(url, json: data)
 
         raise ApiError.new(resp) if resp.code != 200
-        JSON.parse(resp.to_s)
+        resp.parse
       end
 
       def content_request(action, args={})
