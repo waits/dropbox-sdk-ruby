@@ -14,7 +14,7 @@ module Dropbox
 
   # Contains the metadata (but not contents) of a file.
   class FileMetadata < Metadata
-    attr_reader :id, :client_modified, :server_modified, :rev, :size
+    attr_reader :id, :client_modified, :server_modified, :rev, :size, :parent_shared_folder_id
 
     def initialize(attrs={})
       @id = attrs.delete('id')
@@ -24,6 +24,7 @@ module Dropbox
       @server_modified = Time.parse(attrs.delete('server_modified'))
       @rev = attrs.delete('rev')
       @size = attrs.delete('size')
+      @parent_shared_folder_id = attrs.delete('parent_shared_folder_id')
       super(attrs)
     end
 
