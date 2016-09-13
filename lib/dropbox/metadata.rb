@@ -52,4 +52,12 @@ module Dropbox
   # Contains the metadata of a deleted file.
   class DeletedMetadata < Metadata
   end
+
+  class SharedFolderMetadata < Metadata
+    attr_reader :shared_folder_id
+    def initialize(attrs={})
+      @shared_folder_id = attrs.delete('shared_folder_id')
+      super(attrs)
+    end
+  end
 end

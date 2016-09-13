@@ -25,6 +25,13 @@ class DropboxMetadataTest < Minitest::Test
     assert_equal 'abcd', file.parent_shared_folder_id
   end
 
+  def test_shared_folder_initialize
+    file = Dropbox::SharedFolderMetadata.new('path_lower'=>'/folder/file', 'name'=>'file', 'shared_folder_id'=>'1234')
+    assert_equal '/folder/file', file.path_lower
+    assert_equal 'file', file.name
+    assert_equal '1234', file.shared_folder_id
+  end
+
   def test_folder_equality
     a = Dropbox::FolderMetadata.new('id' => 'id:123', 'name' => 'child',
       'path_lower' => '/parent/middle/child', 'path_display' => '/parent/middle/child')
