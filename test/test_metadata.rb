@@ -4,11 +4,13 @@ require 'time'
 class DropboxMetadataTest < Minitest::Test
   def test_folder_initialize
     folder = Dropbox::FolderMetadata.new('id' => 'id:123', 'name' => 'child',
-      'path_lower' => '/parent/middle/child', 'path_display' => '/parent/middle/child')
+      'path_lower' => '/parent/middle/child', 'path_display' => '/parent/middle/child', 'shared_folder_id' => '1234', 'parent_shared_folder_id' => 'abcd')
     assert_equal 'id:123', folder.id
     assert_equal 'child', folder.name
     assert_equal '/parent/middle/child', folder.path_lower
     assert_equal '/parent/middle/child', folder.path_display
+    assert_equal '1234', folder.shared_folder_id
+    assert_equal 'abcd', folder.parent_shared_folder_id
   end
 
   def test_file_initialize
