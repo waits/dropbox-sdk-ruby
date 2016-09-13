@@ -314,6 +314,19 @@ module Dropbox
       SpaceUsage.new(resp)
     end
 
+    # Make a folder shared
+    # @param path [String] The path to the folder to be made shared
+    # @param member_policy [String] Can be 'anyone' or 'team'. Defaults to 'anyone'.
+    # @param acl_update_policy [String] Can be 'owner' or 'editors'. Defaults to 'owner'.
+    # @param shared_link_policy [String] Can be 'anyone' or 'editors'. Defaults to 'anyone'.
+    # @param force_async [Boolean] Defaults to false.
+    # @return [String] the job id, if the processing is asynchronous.
+    # @return [Dropbox::SharedFolderMetadata] if the processing is synchronous
+    def share_folder(path, member_policy: 'anyone', acl_update_policy: 'owner', shared_link_policy: 'anyone', force_async: false)
+      resp = request('/sharing/share_folder', path: path, member_policy: member_policy, acl_update_policy: acl_update_policy, shared_link_policy: shared_link_policy, force_async: force_async)
+      parse_tagged_response(resp)
+    end
+
     private
       def parse_tagged_response(resp)
         case resp['.tag']
@@ -328,7 +341,11 @@ module Dropbox
         when 'full_account'
           FullAccount.new(resp)
         when 'complete'
-          FileMetadata.new(resp)
+          if resp['time_invited']
+            SharedFolderMetadata.new(resp)
+          else
+            FileMetadata.new(resp)
+          end
         when 'async_job_id'
           resp['async_job_id']
         when 'in_progress'
