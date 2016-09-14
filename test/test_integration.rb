@@ -5,10 +5,15 @@ class DropboxIntegrationTest < Minitest::Test
     WebMock.allow_net_connect!
     @client = Dropbox::Client.new(ENV['DROPBOX_SDK_ACCESS_TOKEN'])
     @box = @client.create_folder('/integration_test_container')
+    if ENV['DROPBOX_SDK_ACCESS_TOKEN_2']
+      @client2 = Dropbox::Client.new(ENV['DROPBOX_SDK_ACCESS_TOKEN_2'])
+      @box2 = @client2.create_folder('/integration_test_container')
+    end
   end
 
   def teardown
     @client.delete(@box.path_lower)
+    @client2.delete(@box2.path_lower) if @client2
     WebMock.disable_net_connect!
   end
 
@@ -95,5 +100,35 @@ class DropboxIntegrationTest < Minitest::Test
     file = @client.finish_upload_session(cursor, @box.path_lower + "/large_file.txt", "Finished\n")
     assert_instance_of Dropbox::FileMetadata, file
     assert_equal 75, file.size
+  end
+
+  def test_sharing
+    skip('Please provide a second access token with the DROPBOX_SDK_ACCESS_TOKEN_2 environment variable to run the sharing tests') unless @client2
+    folder = @client.create_folder(@box.path_lower + '/testing_share')
+    shared = @client.share_folder(folder.path_lower)
+    client1_account = @client.get_current_account
+    client2_account = @client2.get_current_account
+
+    # @client shares a folder with @client2, and client2 accepts the share
+    @client.add_folder_member(shared_folder_id: shared.shared_folder_id, members: [client2_account.email])
+    @client2.mount_folder(shared.shared_folder_id)
+    @client2.move('/testing_share', @box2.path_lower + '/testing_share')
+    folder_members = @client2.list_folder_members(shared.shared_folder_id)
+    assert_equal 2, folder_members.length
+    assert_includes folder_members.map(&:account_id), client2_account.account_id
+    assert_includes folder_members.map(&:account_id), client1_account.account_id
+
+    # @client2 uploads a file, and @client can see it
+    uploaded_path = @box.path_lower + '/testing_share/uploaded.txt'
+    @client2.upload(uploaded_path, 'uploaded')
+    files = @client.list_folder(@box.path_lower + '/testing_share')
+    assert_equal files.first.name, 'uploaded.txt'
+
+    # @client transfers ownership to @client2 and then @client
+    # removes themselves from the folder
+    @client.transfer_folder(shared.shared_folder_id, client2_account.account_id)
+    @client.relinquish_folder_membership(shared.shared_folder_id, false)
+    folder_members = @client2.list_folder_members(shared.shared_folder_id)
+    assert_equal 1, folder_members.length
   end
 end
