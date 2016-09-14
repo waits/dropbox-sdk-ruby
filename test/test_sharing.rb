@@ -35,4 +35,10 @@ class DropboxSharingTest < Minitest::Test
     result = @client.transfer_folder('123123123', '123123aaa')
     assert_nil result
   end
+
+  def test_relinquish_membership
+    stub_request(:post, url('sharing/relinquish_folder_membership')).to_return(stub('complete'))
+    result = @client.relinquish_folder_membership('123123')
+    assert_equal 'complete', result
+  end
 end

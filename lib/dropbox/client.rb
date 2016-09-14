@@ -369,6 +369,16 @@ module Dropbox
       resp['users'].map {|user| BasicAccount.new(user['user'])}
     end
 
+    # Relinquish membership of a shared folder you are a member of
+    # @param shared_folder_id [String]
+    # @param leave_a_copy [String] default false
+    # @return [String] 'complete' if the processing is complete
+    # @return [String] the job id, if the processing is asynchronous.
+    def relinquish_folder_membership(shared_folder_id, leave_a_copy = false)
+      resp = request('/sharing/relinquish_folder_membership', shared_folder_id: shared_folder_id, leave_a_copy: leave_a_copy)
+      parse_tagged_response(resp)
+    end
+
     # Transfer ownership of a shared folder to another member of the folder
     # @param shared_folder_id [String]
     # @param to_dropbox_id [String]
@@ -394,8 +404,10 @@ module Dropbox
         when 'complete'
           if resp['time_invited']
             SharedFolderMetadata.new(resp)
-          else
+          elsif resp['client_modified']
             FileMetadata.new(resp)
+          else
+            'complete'
           end
         when 'async_job_id'
           resp['async_job_id']
