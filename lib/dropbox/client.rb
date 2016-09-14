@@ -353,6 +353,14 @@ module Dropbox
       nil
     end
 
+    # Mount a folder (accept a share request)
+    # @param shared_folder_id [String]
+    # @return [Dropbox::SharedFolderMetadata]
+    def mount_folder(shared_folder_id)
+      resp = request('/sharing/mount_folder', shared_folder_id: shared_folder_id)
+      SharedFolderMetadata.new(resp)
+    end
+
     private
       def parse_tagged_response(resp)
         case resp['.tag']

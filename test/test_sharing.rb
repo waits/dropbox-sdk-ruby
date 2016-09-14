@@ -16,4 +16,10 @@ class DropboxSharingTest < Minitest::Test
     result = @client.add_folder_member(shared_folder_id: '123123', members: %w(one@example.com two@example.com))
     assert_equal nil, result
   end
+
+  def test_mount_folder
+    stub_request(:post, url('sharing/mount_folder')).to_return(stub('share_folder'))
+    share = @client.mount_folder('123123')
+    assert_equal '/test/share_me', share.path_lower
+  end
 end
