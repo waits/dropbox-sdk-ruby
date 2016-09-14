@@ -363,10 +363,10 @@ module Dropbox
 
     # List members of a shared folder
     # @param shared_folder_id [String]
-    # @return [Array<Dropbox::BasicAccount>]
+    # @return [Array<Dropbox::UserMembershipInfo>]
     def list_folder_members(shared_folder_id)
       resp = request('/sharing/list_folder_members', shared_folder_id: shared_folder_id)
-      resp['users'].map {|user| BasicAccount.new(user['user'])}
+      resp['users'].map {|user| UserMembershipInfo.new(user)}
     end
 
     # Relinquish membership of a shared folder you are a member of

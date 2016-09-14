@@ -44,4 +44,14 @@ module Dropbox
       @allocated = attrs['allocation']['allocated'] # Space allocated in bytes
     end
   end
+
+  class UserMembershipInfo
+    attr_reader :access_type, :account_id, :same_team, :team_member_id
+
+    def initialize(attrs={})
+      @access_type = attrs['access_type']['.tag']
+      @account_id = attrs['user']['account_id']
+      @same_team = attrs['user']['same_team']
+    end
+  end
 end

@@ -28,6 +28,8 @@ class DropboxSharingTest < Minitest::Test
     list = @client.list_folder_members('123123')
     assert_equal 3, list.length
     assert_equal 'dbid:user1', list.first.account_id
+    assert_equal false, list.first.same_team
+    assert_equal 'owner', list.first.access_type
   end
 
   def test_transfer_folder
