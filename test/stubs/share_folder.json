@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  ".tag": "complete",
+  "access_type": {".tag": "owner"},
+  "is_team_folder": false,
+  "policy": {"acl_update_policy": {".tag": "editors"}, "shared_link_policy": {".tag": "anyone"}},
+  "path_lower": "/test/share_me",
+ "name": "share_me",
+ "shared_folder_id": "123123123",
+ "time_invited": "2016-09-13T23:38:32Z",
+ "preview_url": "https://www.dropbox.com/scl/fo/123123123/AADAASDKJASDASD"}
