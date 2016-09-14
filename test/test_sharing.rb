@@ -13,7 +13,7 @@ class DropboxSharingTest < Minitest::Test
 
   def test_add_folder_member
     stub_request(:post, url('sharing/add_folder_member')).to_return(stub('null'))
-    result = @client.add_folder_member(shared_folder_id: '123123', members: %w(one@example.com two@example.com))
+    result = @client.add_folder_member('123123', %w(one@example.com two@example.com))
     assert_nil result
   end
 

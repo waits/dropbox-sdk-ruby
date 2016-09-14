@@ -110,7 +110,7 @@ class DropboxIntegrationTest < Minitest::Test
     client2_account = @client2.get_current_account
 
     # @client shares a folder with @client2, and client2 accepts the share
-    @client.add_folder_member(shared_folder_id: shared.shared_folder_id, members: [client2_account.email])
+    @client.add_folder_member(shared.shared_folder_id, [client2_account.email])
     @client2.mount_folder(shared.shared_folder_id)
     @client2.move('/testing_share', @box2.path_lower + '/testing_share')
     folder_members = @client2.list_folder_members(shared.shared_folder_id)
@@ -127,7 +127,7 @@ class DropboxIntegrationTest < Minitest::Test
     # @client transfers ownership to @client2 and then @client
     # removes themselves from the folder
     @client.transfer_folder(shared.shared_folder_id, client2_account.account_id)
-    @client.relinquish_folder_membership(shared.shared_folder_id, false)
+    @client.relinquish_folder_membership(shared.shared_folder_id, leave_a_copy: false)
     folder_members = @client2.list_folder_members(shared.shared_folder_id)
     assert_equal 1, folder_members.length
   end

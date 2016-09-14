@@ -334,7 +334,7 @@ module Dropbox
     # @param custom_message [String] A custom message to be sent to all of the members. Defaults to nil.
     # @param access_level [String] The access level given to all members. Can be 'editor', 'viewer' or 'viewer_no_comment'. Defaults to 'editor'.
     # @return [void]
-    def add_folder_member(shared_folder_id:, members:, quiet: false, custom_message: nil, access_level: 'editor')
+    def add_folder_member(shared_folder_id, members, quiet: false, custom_message: nil, access_level: 'editor')
       params = {shared_folder_id: shared_folder_id, quiet: quiet}
       params[:members] = members.map do |member|
         {
@@ -374,7 +374,7 @@ module Dropbox
     # @param leave_a_copy [String] default false
     # @return [String] 'complete' if the processing is complete
     # @return [String] the job id, if the processing is asynchronous.
-    def relinquish_folder_membership(shared_folder_id, leave_a_copy = false)
+    def relinquish_folder_membership(shared_folder_id, leave_a_copy: false)
       resp = request('/sharing/relinquish_folder_membership', shared_folder_id: shared_folder_id, leave_a_copy: leave_a_copy)
       parse_tagged_response(resp)
     end
