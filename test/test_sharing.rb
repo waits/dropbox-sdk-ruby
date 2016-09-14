@@ -22,4 +22,11 @@ class DropboxSharingTest < Minitest::Test
     share = @client.mount_folder('123123')
     assert_equal '/test/share_me', share.path_lower
   end
+
+  def test_list_folder_members
+    stub_request(:post, url('sharing/list_folder_members')).to_return(stub('list_folder_members'))
+    list = @client.list_folder_members('123123')
+    assert_equal 3, list.length
+    assert_equal 'dbid:user1', list.first.account_id
+  end
 end

@@ -361,6 +361,14 @@ module Dropbox
       SharedFolderMetadata.new(resp)
     end
 
+    # List members of a shared folder
+    # @param shared_folder_id [String]
+    # @return [Array<Dropbox::BasicAccount>]
+    def list_folder_members(shared_folder_id)
+      resp = request('/sharing/list_folder_members', shared_folder_id: shared_folder_id)
+      resp['users'].map {|user| BasicAccount.new(user['user'])}
+    end
+
     private
       def parse_tagged_response(resp)
         case resp['.tag']

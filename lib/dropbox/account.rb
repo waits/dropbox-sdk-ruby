@@ -4,7 +4,7 @@ module Dropbox
 
     def initialize(attrs={})
       @account_id = attrs['account_id']
-      @display_name = attrs['name']['display_name']
+      @display_name = attrs['name']['display_name'] if attrs['name']
       @email = attrs['email']
       @email_verified = attrs['email_verified']
       @disabled = attrs['disabled']
