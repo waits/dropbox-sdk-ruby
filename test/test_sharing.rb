@@ -5,6 +5,24 @@ class DropboxSharingTest < Minitest::Test
     @client = Dropbox::Client.new('super-fake-access-token-1234567890000000000000000000000000000000')
   end
 
+  def test_list_shared_folders
+    stub_request(:post, url('sharing/list_folders')).to_return(stub('list_shared_folders'))
+    folders, cursor = @client.list_shared_folders
+    folders.each do |folder|
+      assert_instance_of Dropbox::FolderMetadata, folder
+    end
+    assert_equal 'cursor123', cursor
+  end
+
+  def test_continue_list_shared_folders
+    stub_request(:post, url('sharing/list_folders/continue')).to_return(stub('list_shared_folders'))
+    folders, cursor = @client.continue_list_shared_folders('cursor')
+    folders.each do |folder|
+      assert_instance_of Dropbox::FolderMetadata, folder
+    end
+    assert_equal 'cursor123', cursor
+  end
+
   def test_share_folder
     stub_request(:post, url('sharing/share_folder')).to_return(stub('share_folder'))
     share = @client.share_folder('/test/share_me')

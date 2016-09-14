@@ -1,0 +1,23 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+ {"entries":
+  [{"access_type": {".tag": "editor"},
+    "is_team_folder": false,
+    "policy": {"acl_update_policy": {".tag": "editors"}, "shared_link_policy": {".tag": "anyone"}},
+    "path_lower": "/shared_file_1",
+    "name": "shared_file_1",
+    "shared_folder_id": "1234",
+    "permissions": [],
+    "time_invited": "2016-09-12T23:07:11Z",
+    "preview_url": "https://www.dropbox.com/scl/fo/abcd/1234"},
+   {"access_type": {".tag": "owner"},
+    "is_team_folder": false,
+    "policy": {"acl_update_policy": {".tag": "editors"}, "shared_link_policy": {".tag": "anyone"}},
+    "path_lower": "/shared_file_2",
+    "name": "shared_file_2",
+    "shared_folder_id": "1235",
+    "permissions": [],
+    "time_invited": "2016-09-12T22:36:20Z",
+    "preview_url": "https://www.dropbox.com/scl/fo/abce/1235"}],
+ "cursor": "cursor123"}
