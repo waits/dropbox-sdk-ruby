@@ -14,7 +14,7 @@ class DropboxSharingTest < Minitest::Test
   def test_add_folder_member
     stub_request(:post, url('sharing/add_folder_member')).to_return(stub('null'))
     result = @client.add_folder_member(shared_folder_id: '123123', members: %w(one@example.com two@example.com))
-    assert_equal nil, result
+    assert_nil result
   end
 
   def test_mount_folder
@@ -28,5 +28,11 @@ class DropboxSharingTest < Minitest::Test
     list = @client.list_folder_members('123123')
     assert_equal 3, list.length
     assert_equal 'dbid:user1', list.first.account_id
+  end
+
+  def test_transfer_folder
+    stub_request(:post, url('sharing/transfer_folder')).to_return(stub('null'))
+    result = @client.transfer_folder('123123123', '123123aaa')
+    assert_nil result
   end
 end

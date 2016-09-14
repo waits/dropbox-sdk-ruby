@@ -369,6 +369,15 @@ module Dropbox
       resp['users'].map {|user| BasicAccount.new(user['user'])}
     end
 
+    # Transfer ownership of a shared folder to another member of the folder
+    # @param shared_folder_id [String]
+    # @param to_dropbox_id [String]
+    # @return [void]
+    def transfer_folder(shared_folder_id, to_dropbox_id)
+      request('/sharing/transfer_folder', shared_folder_id: shared_folder_id, to_dropbox_id: to_dropbox_id)
+      nil
+    end
+
     private
       def parse_tagged_response(resp)
         case resp['.tag']
