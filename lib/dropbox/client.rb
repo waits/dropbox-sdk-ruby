@@ -347,6 +347,21 @@ module Dropbox
       parse_tagged_response(resp)
     end
 
+    # Update the sharing policies for a shared folder.
+    # @params shared_folder_id [String] The shared_id of the folder
+    # @params member_policy [String]. Can be nil, 'anyone' or 'team'. Defaults to nil
+    # @params acl_update_policy [String]. Can be nil, 'owner' or 'editors'. Defaults to nil.
+    # @params shared_link_policy [String]. Can be nil, 'anyone' or 'members'. Defaults to nil.
+    # @return [Dropbox::SharedFolderMetadata]
+    def update_folder_policy(shared_folder_id, member_policy: nil, acl_update_policy: nil, shared_link_policy: nil)
+      data = {shared_folder_id: shared_folder_id}
+      data[:member_policy] = member_policy if member_policy
+      data[:acl_update_policy] = acl_update_policy if acl_update_policy
+      data[:shared_link_policy] = shared_link_policy if shared_link_policy
+      resp = request('/sharing/update_folder_policy', data)
+      SharedFolderMetadata.new(resp)
+    end
+
     # Add a member to a shared folder
     # @param shared_folder_id [String] The shared_id of the folder
     # @param members [Array<String>] An array of emails as Strings.

@@ -61,4 +61,10 @@ class DropboxSharingTest < Minitest::Test
     result = @client.relinquish_folder_membership('123123')
     assert_equal 'complete', result
   end
+
+  def test_update_folder_policy
+    stub_request(:post, url('sharing/update_folder_policy')).to_return(stub('share_folder'))
+    result = @client.update_folder_policy('123123', acl_update_policy: 'editors')
+    assert_equal '/test/share_me', result.path_lower
+  end
 end
