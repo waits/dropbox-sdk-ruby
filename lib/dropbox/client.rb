@@ -314,6 +314,24 @@ module Dropbox
       SpaceUsage.new(resp)
     end
 
+    # Create a shared link with custom settings.
+    #
+    # @param [String] path
+    # @return [Dropbox::FileLinkMetadata, Dropbox::FolderLinkMetadata] entry
+    def create_shared_link_with_settings(path)
+      resp = request('/sharing/create_shared_link_with_settings', path: path)
+      case resp['.tag']
+      when 'file'
+        FileLinkMetadata.new(resp)
+      when 'folder'
+        FolderLinkMetadata.new(resp)
+      when 'failed'
+        resp['failed']['.tag']
+      else
+        raise ClientError.unknown_response_type(resp['.tag'])
+      end
+    end
+
     private
       def parse_tagged_response(resp)
         case resp['.tag']

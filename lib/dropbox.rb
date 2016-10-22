@@ -3,6 +3,8 @@ require_relative 'dropbox/errors'
 require_relative 'dropbox/account'
 require_relative 'dropbox/metadata'
 require_relative 'dropbox/upload_session_cursor'
+require_relative 'dropbox/team'
+require_relative 'dropbox/link_permissions'
 
 # A small library for accessing the new Dropbox API. All of the Dropbox API
 # endpoints are implemented as methods on {Dropbox::Client}.
