@@ -135,7 +135,8 @@ module Dropbox
       include_media_info: false,
       include_deleted: false,
       include_has_explicit_shared_members: false  )
-      resp = np_list_folder(path, {
+      resp = request('/files/list_folder', {
+        path: path,
         recursive: recursive,
         include_media_info: include_media_info,
         include_deleted: include_deleted,
