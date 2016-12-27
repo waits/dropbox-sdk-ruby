@@ -314,6 +314,115 @@ module Dropbox
       SpaceUsage.new(resp)
     end
 
+    # List shared folders owned by the current user
+    # @param limit [Integer] The maximum number of results to return. Defaults to 1000
+    # @return [Array<Dropbox::FileMetadata>] entries
+    # @return [String] cursor
+    def list_shared_folders(limit = 1000)
+      resp = request('/sharing/list_folders', limit: limit)
+      entries = resp['entries'].map { |entry| FolderMetadata.new(entry) }
+      [entries, resp['cursor']]
+    end
+
+    # Continue the list of shared folders
+    # @param cursor [String]
+    # @return [Array<Dropbox::FileMetadata>] entries
+    # @return [String] cursor
+    def continue_list_shared_folders(cursor)
+      resp = request('/sharing/list_folders/continue', cursor: cursor)
+      entries = resp['entries'].map { |entry| FolderMetadata.new(entry) }
+      [entries, resp['cursor']]
+    end
+
+    # Make a folder shared
+    # @param path [String] The path to the folder to be made shared
+    # @param member_policy [String] Can be 'anyone' or 'team'. Defaults to 'anyone'.
+    # @param acl_update_policy [String] Can be 'owner' or 'editors'. Defaults to 'owner'.
+    # @param shared_link_policy [String] Can be 'anyone' or 'editors'. Defaults to 'anyone'.
+    # @param force_async [Boolean] Defaults to false.
+    # @return [String] the job id, if the processing is asynchronous.
+    # @return [Dropbox::SharedFolderMetadata] if the processing is synchronous
+    def share_folder(path, member_policy: 'anyone', acl_update_policy: 'owner', shared_link_policy: 'anyone', force_async: false)
+      resp = request('/sharing/share_folder', path: path, member_policy: member_policy, acl_update_policy: acl_update_policy, shared_link_policy: shared_link_policy, force_async: force_async)
+      parse_tagged_response(resp)
+    end
+
+    # Update the sharing policies for a shared folder.
+    # @params shared_folder_id [String] The shared_id of the folder
+    # @params member_policy [String]. Can be nil, 'anyone' or 'team'. Defaults to nil
+    # @params acl_update_policy [String]. Can be nil, 'owner' or 'editors'. Defaults to nil.
+    # @params shared_link_policy [String]. Can be nil, 'anyone' or 'members'. Defaults to nil.
+    # @return [Dropbox::SharedFolderMetadata]
+    def update_folder_policy(shared_folder_id, member_policy: nil, acl_update_policy: nil, shared_link_policy: nil)
+      data = {shared_folder_id: shared_folder_id}
+      data[:member_policy] = member_policy if member_policy
+      data[:acl_update_policy] = acl_update_policy if acl_update_policy
+      data[:shared_link_policy] = shared_link_policy if shared_link_policy
+      resp = request('/sharing/update_folder_policy', data)
+      SharedFolderMetadata.new(resp)
+    end
+
+    # Add a member to a shared folder
+    # @param shared_folder_id [String] The shared_id of the folder
+    # @param members [Array<String>] An array of emails as Strings.
+    # @param quiet [Boolean] defaults to false
+    # @param custom_message [String] A custom message to be sent to all of the members. Defaults to nil.
+    # @param access_level [String] The access level given to all members. Can be 'editor', 'viewer' or 'viewer_no_comment'. Defaults to 'editor'.
+    # @return [void]
+    def add_folder_member(shared_folder_id, members, quiet: false, custom_message: nil, access_level: 'editor')
+      params = {shared_folder_id: shared_folder_id, quiet: quiet}
+      params[:members] = members.map do |member|
+        {
+          'member' => {
+            '.tag' => 'email',
+            'email' => member
+          },
+          'access_level' => {
+            '.tag' => access_level
+          }
+        }
+      end
+      params[:custom_message] = custom_message if custom_message
+
+      request('/sharing/add_folder_member', params)
+      nil
+    end
+
+    # Mount a folder (accept a share request)
+    # @param shared_folder_id [String]
+    # @return [Dropbox::SharedFolderMetadata]
+    def mount_folder(shared_folder_id)
+      resp = request('/sharing/mount_folder', shared_folder_id: shared_folder_id)
+      SharedFolderMetadata.new(resp)
+    end
+
+    # List members of a shared folder
+    # @param shared_folder_id [String]
+    # @return [Array<Dropbox::UserMembershipInfo>]
+    def list_folder_members(shared_folder_id)
+      resp = request('/sharing/list_folder_members', shared_folder_id: shared_folder_id)
+      resp['users'].map {|user| UserMembershipInfo.new(user)}
+    end
+
+    # Relinquish membership of a shared folder you are a member of
+    # @param shared_folder_id [String]
+    # @param leave_a_copy [String] default false
+    # @return [String] 'complete' if the processing is complete
+    # @return [String] the job id, if the processing is asynchronous.
+    def relinquish_folder_membership(shared_folder_id, leave_a_copy: false)
+      resp = request('/sharing/relinquish_folder_membership', shared_folder_id: shared_folder_id, leave_a_copy: leave_a_copy)
+      parse_tagged_response(resp)
+    end
+
+    # Transfer ownership of a shared folder to another member of the folder
+    # @param shared_folder_id [String]
+    # @param to_dropbox_id [String]
+    # @return [void]
+    def transfer_folder(shared_folder_id, to_dropbox_id)
+      request('/sharing/transfer_folder', shared_folder_id: shared_folder_id, to_dropbox_id: to_dropbox_id)
+      nil
+    end
+
     private
       def parse_tagged_response(resp)
         case resp['.tag']
@@ -328,7 +437,13 @@ module Dropbox
         when 'full_account'
           FullAccount.new(resp)
         when 'complete'
-          FileMetadata.new(resp)
+          if resp['time_invited']
+            SharedFolderMetadata.new(resp)
+          elsif resp['client_modified']
+            FileMetadata.new(resp)
+          else
+            'complete'
+          end
         when 'async_job_id'
           resp['async_job_id']
         when 'in_progress'
@@ -347,7 +462,7 @@ module Dropbox
           .post(url, json: data)
 
         raise ApiError.new(resp) if resp.code != 200
-        JSON.parse(resp.to_s)
+        resp.parse
       end
 
       def content_request(action, args={})
