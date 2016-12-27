@@ -235,7 +235,7 @@ module Dropbox
     # @option options [Boolean] :mute
     # @return [Dropbox::FileMetadata]
     def upload(path, body, options={})
-      options[:client_modified] = Time.now.utc.iso8601
+      options[:client_modified] = Time.now.utc.iso8601 if options[:client_modified].nil?
       options[:path] = path
       resp = upload_request('/files/upload', body, options.merge(path: path))
       FileMetadata.new(resp)
