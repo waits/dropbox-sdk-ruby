@@ -122,13 +122,36 @@ module Dropbox
       return FileMetadata.new(resp), body
     end
 
+    def _list_folder(path, opts = nil)
+      args = { path: path }.merge(opts || {})
+      request('/files/list_folder', args)
+    end
+
     # Get the contents of a folder.
     #
     # @param [String] path
     # @return [Array<Dropbox::Metadata>]
     def list_folder(path)
-      resp = request('/files/list_folder', path: path)
+      resp = _list_folder(path)
       resp['entries'].map { |e| parse_tagged_response(e) }
+    end
+
+    # Get all files (recursively) from a folder
+    #
+    # @param [String] path
+    # @return [Array<Dropbox::Metadata>]
+    def list_all_files(path)
+      resp = _list_folder(path, recursive: true)
+      has_more = resp['has_more']
+      cursor = resp['cursor']
+      entries = resp['entries']
+      while has_more && !cursor.nil?
+        resp = request('/files/list_folder/continue', cursor: cursor)
+        has_more = resp['has_more']
+        cursor = resp['cursor']
+        entries += resp['entries']
+      end
+      entries.map { |e| parse_tagged_response(e) if e['.tag'] == 'file' }.compact
     end
 
     # Get the contents of a folder that are after a cursor.

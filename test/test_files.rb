@@ -161,6 +161,27 @@ class DropboxFilesTest < Minitest::Test
     assert_equal 'math', entries[1].name
   end
 
+  def test_list_all_files
+    stub_request(:post, url('files/list_folder'))
+      .with(body: { recursive: true, path: '/Homework/math' } )
+      .to_return(stub('recursive_folder_contents'))
+    stub_request(:post, url('files/list_folder/continue'))
+      .with(body: { cursor: "PART1_CURSOR" })
+      .to_return(stub('recursive_folder_contents_part_2'))
+    stub_request(:post, url('files/list_folder/continue'))
+      .with(body: { cursor: "PART2_CURSOR" })
+      .to_return(stub('recursive_folder_contents_part_3'))
+
+    entries = @client.list_all_files('/Homework/math')
+
+    assert_equal 2, entries.length
+    assert entries[0].is_a?(Dropbox::FileMetadata)
+    assert_equal 'Prime_Numbers.txt', entries[0].name
+    assert_equal 7212, entries[0].size
+    assert_equal 'Irrational_Numbers.txt', entries[1].name
+    assert_equal 7200, entries[1].size
+  end
+
   def test_list_folder_empty
     stub_request(:post, url('files/list_folder')).to_return(stub('empty_folder_contents'))
     entries = @client.list_folder('/empty_folder')
