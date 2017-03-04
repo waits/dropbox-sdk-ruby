@@ -122,17 +122,12 @@ module Dropbox
       return FileMetadata.new(resp), body
     end
 
-    def _list_folder(path, opts = nil)
-      args = { path: path }.merge(opts || {})
-      request('/files/list_folder', args)
-    end
-
     # Get the contents of a folder.
     #
     # @param [String] path
     # @return [Array<Dropbox::Metadata>]
     def list_folder(path)
-      resp = _list_folder(path)
+      resp = request('/files/list_folder', path: path)
       resp['entries'].map { |e| parse_tagged_response(e) }
     end
 
@@ -141,7 +136,7 @@ module Dropbox
     # @param [String] path
     # @return [Array<Dropbox::Metadata>]
     def list_all_files(path)
-      resp = _list_folder(path, recursive: true)
+      resp = request('/files/list_folder', path: path, recursive: true)
       has_more = resp['has_more']
       cursor = resp['cursor']
       entries = resp['entries']
