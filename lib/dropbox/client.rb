@@ -125,9 +125,17 @@ module Dropbox
     # Get the contents of a folder.
     #
     # @param [String] path
+    # @param [Hash] options 
+    # @option (see #list_folder)
     # @return [Array<Dropbox::Metadata>]
-    def list_folder(path)
-      resp = request('/files/list_folder', path: path)
+    def list_folder(path, options={})
+      options[:path] = path
+      options[:recursive] ||= false
+      options[:include_deleted] ||= false
+      options[:include_media_info] ||= false
+      options[:include_has_explicit_shared_members] ||= false
+      options[:include_mounted_folders] ||= true
+      resp = request('/files/list_folder', options)
       resp['entries'].map { |e| parse_tagged_response(e) }
     end
 
