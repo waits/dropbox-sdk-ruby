@@ -7,10 +7,6 @@ module Dropbox
   class Client
     # @param [String] access_token
     def initialize(access_token)
-      unless access_token =~ /^[a-z0-9_-]{64}$/i
-        raise ClientError.invalid_access_token
-      end
-
       @access_token = access_token
     end
 
